@@ -31,7 +31,7 @@ router.get('/docs', async () => {
 router
   .group(() => {
     router.resource('users', UsersController).apiOnly()
-    router.resource('rooms', RoomsController).apiOnly()
+    router.resource('rooms', RoomsController).apiOnly().where('id', router.matchers.uuid())
     router.resource('sessions', SessionsController).apiOnly()
     router.resource('movies', MoviesController).apiOnly().where('id', router.matchers.uuid())
   })

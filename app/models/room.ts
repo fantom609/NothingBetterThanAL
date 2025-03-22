@@ -13,7 +13,7 @@ export default class Room extends BaseModel {
   declare name: string
 
   @column()
-  declare description: string | undefined
+  declare description: string | null
 
   @column()
   declare type: string
