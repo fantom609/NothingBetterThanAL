@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:15
-    container_name: postgres_db
+    container_name: nbta_db
     ports:
       - "5432:5432"
     environment:
@@ -13,7 +13,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: pgadmin
+    container_name: nbta_pgadmin
     ports:
       - "8080:80"
     environment:
