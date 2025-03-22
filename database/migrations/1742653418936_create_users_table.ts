@@ -10,7 +10,7 @@ export default class extends BaseSchema {
       table.string('forname').notNullable()
       table.string('name').notNullable()
       table.string('email').notNullable().unique()
-      table.enum('role', ['ADMIN', 'USER']).notNullable()
+      table.enum('role', ['ADMIN', 'USER', 'SUPERADMIN']).notNullable()
       table.timestamps(true, true)
     })
   }

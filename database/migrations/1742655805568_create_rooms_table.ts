@@ -7,8 +7,8 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid('id').primary()
       table.string('name').notNullable()
-      table.string('description').notNullable()
-      table.enum('type', ['3D', '4D'])
+      table.string('description').nullable()
+      table.enum('type', ['2D', '3D', '4D']).notNullable()
       table.boolean('disabled').notNullable()
       table.boolean('maintenance').notNullable()
       table.timestamps(true, true)
