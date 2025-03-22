@@ -27,17 +27,17 @@ export default class Session extends BaseModel {
   @belongsTo(() => Movie)
   declare movie: BelongsTo<typeof Movie>
 
-  @column()
+  @column.dateTime()
   declare start: DateTime
 
-  @column()
+  @column.dateTime()
   declare end: DateTime
 
   @column()
   declare price: number
 
   @manyToMany(() => User)
-  declare skills: ManyToMany<typeof User>
+  declare users: ManyToMany<typeof User>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

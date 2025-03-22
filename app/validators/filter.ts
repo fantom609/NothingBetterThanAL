@@ -32,3 +32,21 @@ export const roomIndexParams = vine.compile(
     order: vine.enum(['asc', 'desc']),
   })
 )
+
+export const sessionIndexParams = vine.compile(
+  vine.object({
+    page: vine.number(),
+    limit: vine.number(),
+    sort: vine.enum([
+      'id',
+      'roomId',
+      'movieId',
+      'start',
+      'end',
+      'price',
+      'createdAt',
+      'updatedAt',
+    ]),
+    order: vine.enum(['asc', 'desc']),
+  })
+)
