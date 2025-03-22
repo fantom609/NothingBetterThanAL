@@ -180,8 +180,8 @@ export default class SessionsController {
       const overlappingSession = await Session.query()
         .where('roomId', room.id)
         .where((qb) => {
-          qb.whereBetween('start', [!start.toSQL(), !end.toSQL()])
-            .orWhereBetween('end', [!start.toSQL(), !end.toSQL()])
+          qb.whereBetween('start', [start.toSQL(), end.toSQL()])
+            .orWhereBetween('end', [start.toSQL(), end.toSQL()])
         })
         .first()
 
@@ -195,8 +195,8 @@ export default class SessionsController {
       const conflictingMovieSession = await Session.query()
         .where('movieId', movie.id)
         .where((qb) => {
-          qb.whereBetween('start', [!start.toSQL(), !end.toSQL()])
-            .orWhereBetween('end', [!start.toSQL(), !end.toSQL()])
+          qb.whereBetween('start', [start.toSQL(), end.toSQL()])
+            .orWhereBetween('end', [start.toSQL(), end.toSQL()])
         })
         .first()
 
