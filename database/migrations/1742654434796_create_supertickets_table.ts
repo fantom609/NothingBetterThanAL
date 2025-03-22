@@ -1,16 +1,19 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'users'
+  protected tableName = 'supertickets'
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid('id').primary()
-      table.string('password').notNullable()
-      table.string('forname').notNullable()
-      table.string('name').notNullable()
-      table.string('email').notNullable().unique()
-      table.enum('role', ['ADMIN', 'USER']).notNullable()
+      table
+        .uuid('user_id')
+        .unsigned()
+        .references('id')
+        .inTable('users')
+        .onDelete('CASCADE')
+        .notNullable()
+      table.integer('remaining_uses').notNullable().defaultTo(10)
       table.timestamps(true, true)
     })
   }
