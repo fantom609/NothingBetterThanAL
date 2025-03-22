@@ -30,10 +30,10 @@ router.get('/docs', async () => {
 
 router
   .group(() => {
-      router.resource('users', MoviesController).apiOnly()
-      router.resource('rooms', RoomsController).apiOnly()
-      router.resource('sessions', SessionsController).apiOnly()
-      router.resource('movies', UsersController).apiOnly()
+    router.resource('users', UsersController).apiOnly()
+    router.resource('rooms', RoomsController).apiOnly()
+    router.resource('sessions', SessionsController).apiOnly()
+    router.resource('movies', MoviesController).apiOnly().where('id', router.matchers.uuid())
   })
   .prefix('api')
 

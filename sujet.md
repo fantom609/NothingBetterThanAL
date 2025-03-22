@@ -1,6 +1,6 @@
 # Projet Final
 
-Bienvenue au projet de développement d’une application pour le cinéma **NothingBetterThanAL**, ouvert du lundi au vendredi de 9h à 20h.  
+Bienvenue au projet de développement d’une application pour le cinéma ****, ouvert du lundi au vendredi de 9h à 20h.  
 Ce projet consiste à créer une API RESTful en Node.js et TypeScript avec plusieurs fonctionnalités clés autour de la gestion d’un cinéma.  
 Vous trouverez ci-dessous les détails et exigences :
 
