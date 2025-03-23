@@ -57,7 +57,13 @@ export default class SessionsController {
         }
       }
 
-      const session = await query.preload('room').preload('movie').paginate(page, limit)
+      const session = await query
+        .whereHas('room', (roomQuery) => {
+          roomQuery.where('maintenance', false)
+        })
+        .preload('room')
+        .preload('movie')
+        .paginate(page, limit)
 
       session.baseUrl('/sessions')
       logger.info(`Successfully retrieved ${session.getMeta().total} sessions`)

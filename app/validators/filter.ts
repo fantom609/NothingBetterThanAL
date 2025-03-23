@@ -2,23 +2,23 @@ import vine from '@vinejs/vine'
 
 export const movieIndexParams = vine.compile(
   vine.object({
-    page: vine.number(),
-    limit: vine.number(),
+    page: vine.number().optional(),
+    limit: vine.number().optional(),
     sort: vine.enum([
       'id',
       'name',
       'duration',
       'createdAt',
       'updatedAt',
-    ]),
-    order: vine.enum(['asc', 'desc']),
+    ]).optional(),
+    order: vine.enum(['asc', 'desc']).optional(),
   })
 )
 
 export const roomIndexParams = vine.compile(
   vine.object({
-    page: vine.number(),
-    limit: vine.number(),
+    page: vine.number().optional(),
+    limit: vine.number().optional(),
     sort: vine.enum([
       'id',
       'name',
@@ -28,15 +28,15 @@ export const roomIndexParams = vine.compile(
       'maintenance',
       'createdAt',
       'updatedAt',
-    ]),
-    order: vine.enum(['asc', 'desc']),
+    ]).optional(),
+    order: vine.enum(['asc', 'desc']).optional(),
   })
 )
 
 export const sessionIndexParams = vine.compile(
   vine.object({
-    page: vine.number(),
-    limit: vine.number(),
+    page: vine.number().optional(),
+    limit: vine.number().optional(),
     sort: vine.enum([
       'id',
       'roomId',
@@ -46,7 +46,7 @@ export const sessionIndexParams = vine.compile(
       'price',
       'createdAt',
       'updatedAt',
-    ]),
-    order: vine.enum(['asc', 'desc']),
+    ]).optional(),
+    order: vine.enum(['asc', 'desc']).optional(),
   })
 )
