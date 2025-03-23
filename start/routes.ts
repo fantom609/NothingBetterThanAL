@@ -32,13 +32,16 @@ router.get('/docs', async () => {
 
 router
   .group(() => {
-    router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use('*', middleware.auth())
+    router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid())
     router.resource('rooms', RoomsController).apiOnly().where('id', router.matchers.uuid())
     router.resource('sessions', SessionsController).apiOnly()
     router.resource('movies', MoviesController).apiOnly().where('id', router.matchers.uuid())
-    router.post('login', [AuthController, 'login'])
-    router.delete('logout', [AuthController, 'logout']).use(middleware.auth())
-
+    router
+      .group(() => {
+        router.post('login', [AuthController, 'login'])
+        router.delete('logout', [AuthController, 'logout']).use(middleware.auth())
+      })
+      .prefix('auth')
   })
   .prefix('api')
 
