@@ -50,3 +50,20 @@ export const sessionIndexParams = vine.compile(
     order: vine.enum(['asc', 'desc']),
   })
 )
+
+export const userIndexParams = vine.compile(
+  vine.object({
+    page: vine.number().optional(),
+    limit: vine.number().optional(),
+    sort: vine.enum([
+      'id',
+      'name',
+      'forname',
+      'email',
+      'role',
+      'createdAt',
+      'updatedAt',
+    ]).optional(),
+    order: vine.enum(['asc', 'desc']).optional(),
+  })
+)
