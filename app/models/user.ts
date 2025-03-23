@@ -29,6 +29,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare name: string
 
   @column()
+  declare balance: number
+
+  @column()
   declare email: string
 
   @column()

@@ -7,6 +7,7 @@ export default class extends BaseSeeder {
       {
         email: 'admin@cinema.com',
         password: 'Cinema1234',
+        balance: 100,
         name: 'admin',
         forname: 'admin',
         role: 'ADMIN',
@@ -14,6 +15,7 @@ export default class extends BaseSeeder {
       {
         email: 'JohnDoe@gmail.com',
         password: 'JohnDoe20',
+        balance: 1000,
         name: 'john',
         forname: 'Doe',
         role: 'USER',
