@@ -17,6 +17,8 @@ const RoomsController = () => import('#controllers/rooms_controller')
 const SessionsController = () => import('#controllers/sessions_controller')
 const UsersController = () => import('#controllers/users_controller')
 const AuthController = () => import('#controllers/auth_controller')
+const TransactionController = () => import('#controllers/transactions_controller')
+
 
 router.get('/swagger', async () => {
   return AutoSwagger.default.docs(router.toJSON(), swagger)
@@ -33,6 +35,12 @@ router.get('/docs', async () => {
 router
   .group(() => {
     router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use(['index', 'show'], middleware.auth())
+    router.resource('users.transactions', TransactionController).apiOnly().params({users: 'user', transactions: 'transaction'}).where('id', router.matchers.uuid()).use('*', middleware.auth())
+    router
+      .group(() => {
+        router.get('/indexAll', [TransactionController, 'indexAll'])
+      })
+      .prefix('transactions').use(middleware.auth())
     router.resource('rooms', RoomsController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use('*', middleware.auth())
     router
       .group(() => {

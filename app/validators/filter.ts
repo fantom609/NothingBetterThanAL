@@ -67,3 +67,17 @@ export const userIndexParams = vine.compile(
     order: vine.enum(['asc', 'desc']).optional(),
   })
 )
+
+export const transactionIndexParams = vine.compile(
+  vine.object({
+    page: vine.number().optional(),
+    limit: vine.number().optional(),
+    sort: vine.enum([
+      'balance',
+      'type',
+      'createdAt',
+      'updatedAt',
+    ]).optional(),
+    order: vine.enum(['asc', 'desc']).optional(),
+  })
+)

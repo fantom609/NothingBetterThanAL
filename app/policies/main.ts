@@ -13,6 +13,7 @@
 */
 
 export const policies = {
+  TransactionPolicy: () => import('#policies/transaction_policy'),
   MoviePolicy: () => import('#policies/movie_policy'),
   UserPolicy: () => import('#policies/user_policy'),
   RoomPolicy: () => import('#policies/room_policy')
