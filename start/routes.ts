@@ -10,11 +10,13 @@
 import router from '@adonisjs/core/services/router'
 import AutoSwagger from 'adonis-autoswagger'
 import swagger from '#config/swagger'
+import {middleware} from "#start/kernel";
 
 const MoviesController = () => import('#controllers/movies_controller')
 const RoomsController = () => import('#controllers/rooms_controller')
 const SessionsController = () => import('#controllers/sessions_controller')
 const UsersController = () => import('#controllers/users_controller')
+const AuthController = () => import('#controllers/auth_controller')
 
 router.get('/swagger', async () => {
   return AutoSwagger.default.docs(router.toJSON(), swagger)
@@ -30,10 +32,13 @@ router.get('/docs', async () => {
 
 router
   .group(() => {
-    router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid())
+    router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use('*', middleware.auth())
     router.resource('rooms', RoomsController).apiOnly().where('id', router.matchers.uuid())
     router.resource('sessions', SessionsController).apiOnly()
     router.resource('movies', MoviesController).apiOnly().where('id', router.matchers.uuid())
+    router.post('login', [AuthController, 'login'])
+    router.delete('logout', [AuthController, 'logout']).use(middleware.auth())
+
   })
   .prefix('api')
 
