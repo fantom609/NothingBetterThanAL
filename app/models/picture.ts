@@ -2,7 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, beforeCreate, belongsTo, column } from '@adonisjs/lucid/orm'
 import { randomUUID } from 'node:crypto'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import Movie from '#models/movie'
+import Room from '#models/room'
 
 export default class Picture extends BaseModel {
   @column({ isPrimary: true })
@@ -12,10 +12,10 @@ export default class Picture extends BaseModel {
   declare path: string
 
   @column()
-  declare movieId: string
+  declare roomId: string
 
-  @belongsTo(() => Movie)
-  declare movie: BelongsTo<typeof Movie>
+  @belongsTo(() => Room)
+  declare room: BelongsTo<typeof Room>
 
   @column()
   @column.dateTime({ autoCreate: true })

@@ -28,7 +28,7 @@ export default class Room extends BaseModel {
   declare capacity: number
 
   @hasMany(() => Picture)
-  declare posts: HasMany<typeof Picture>
+  declare pictures: HasMany<typeof Picture>
 
   @hasMany(() => Session)
   declare sessions: HasMany<typeof Session>

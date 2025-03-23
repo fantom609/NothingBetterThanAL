@@ -5,6 +5,7 @@ import {createRoomValidator, editRoomValidator, showPlanningValidator} from '#va
 import RoomPolicy from "#policies/room_policy";
 import {UserRoles} from "../utils/eums.js";
 import Session from "#models/session";
+import { cuid } from '@adonisjs/core/helpers'
 
 export default class RoomsController {
   /**
@@ -62,7 +63,7 @@ export default class RoomsController {
         logger.info('User role is USER, filtering out maintenance rooms')
       }
 
-      const room = await query.paginate(page, limit)
+      const room = await query.preload('pictures').preload('sessions').paginate(page, limit)
       room.baseUrl('/rooms')
       logger.info(`Successfully retrieved ${room.getMeta().total} rooms`)
 
@@ -86,12 +87,34 @@ export default class RoomsController {
 
     const payload = await request.validateUsing(createRoomValidator)
     logger.info('Payload validated successfully', payload)
+    const room = new Room()
 
-    const room = await Room.firstOrCreate({
+    room.fill({
       ...payload,
       description: payload.description ? payload.description : null,
       maintenance: false,
     })
+
+    await room.save()
+
+    if (payload.pictures) {
+      const keys = []
+      for (let picture of payload.pictures) {
+        const key = `${cuid()}.${picture.extname}`
+        await picture.moveToDisk(key)
+        keys.push(key)
+        logger.info(`Picture moved to minIO with key: ${key}`)
+      }
+
+      await room.related('pictures').createMany(
+        keys.map((key) => ({
+          path: key,
+        }))
+      )
+      logger.info(`Pictures related to service ID ${room.id} created successfully`)
+      await room.load('pictures')
+      logger.info(`Pictures loaded for room ID ${room.id}`)
+    }
 
     logger.info(`Room created successfully with ID: ${room.id}`)
     return response.status(201).send(room)
