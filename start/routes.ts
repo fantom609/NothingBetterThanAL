@@ -32,7 +32,7 @@ router.get('/docs', async () => {
 
 router
   .group(() => {
-    router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid())
+    router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use(['index', 'show'], middleware.auth())
     router.resource('rooms', RoomsController).apiOnly().where('id', router.matchers.uuid()).use('*', middleware.auth())
     router
       .group(() => {

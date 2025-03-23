@@ -2,13 +2,19 @@ import type { HttpContext } from '@adonisjs/core/http'
 import {createUserValidator, patchUserValidator} from "#validators/user";
 import User from "#models/user";
 import {userIndexParams} from "#validators/filter";
+import UserPolicy from "#policies/user_policy";
 
 export default class UsersController {
   /**
    * Display a list of resource
    */
-  async index({logger, response, request}: HttpContext) {
+  async index({logger, response, request, bouncer}: HttpContext) {
     logger.info('Index method called')
+
+    if (await bouncer.with(UserPolicy).denies('index')) {
+      logger.warn('User is not authorized to index a room')
+      return response.forbidden('Cannot create a room')
+    }
 
     await request.validateUsing(userIndexParams)
 
@@ -89,9 +95,14 @@ export default class UsersController {
   /**
    * Show individual record
    */
-  async show({ params, response }: HttpContext) {
+  async show({ params, response, bouncer, logger }: HttpContext) {
 
-    const user = await User.findOrFail(params.id)
+    if (await bouncer.with(UserPolicy).denies('index')) {
+      logger.warn('User is not authorized to show a room')
+      return response.forbidden('Cannot show a room')
+    }
+
+    const user = await User.query().where('id', params.id).preload('session').preload('superticket').preload('transactions').firstOrFail()
 
     response.ok(user)
   }
