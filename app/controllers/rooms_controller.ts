@@ -128,7 +128,7 @@ export default class RoomsController {
     room.description = payload.description ? payload.description : room.description
     room.type = payload.type ? payload.type : room.type
     room.disabled = payload.disabled ? payload.disabled : room.disabled
-    room.maintenance = payload.maintenance ? payload.maintenance : room.maintenance
+    room.maintenance = payload.maintenance === undefined ? room.maintenance : payload.maintenance
     room.capacity = payload.capacity ? payload.capacity : room.capacity
 
     await room.save()
