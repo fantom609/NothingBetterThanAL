@@ -3,3 +3,9 @@ export const UserRoles = {
   USER: 'USER',
   SUPERADMIN: 'SUPERADMIN',
 };
+
+
+export const TransactionType = {
+  WITHDRAW: 'WITHDRAW',
+  DEPOSIT: 'DEPOSIT',
+}

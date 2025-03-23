@@ -14,6 +14,9 @@ export default class Transaction extends BaseModel {
   @column()
   declare userId: string
 
+  @column()
+  declare balance: number
+
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 
