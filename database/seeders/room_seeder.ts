@@ -9,21 +9,24 @@ export default class extends BaseSeeder {
         description: "Salle pas mal",
         type: "2D",
         disabled: false,
-        maintenance: false
+        maintenance: false,
+        capacity: 25
       },
       {
         name: "Salle 2",
         description: "En travaux",
         type: "3D",
         disabled: false,
-        maintenance: true
+        maintenance: true,
+        capacity : 15
       },
       {
         name: "Salle 3",
         description: "Intouchable",
         type: "4D",
         disabled: true,
-        maintenance: false
+        maintenance: false,
+        capacity: 29
       }])
   }
 }

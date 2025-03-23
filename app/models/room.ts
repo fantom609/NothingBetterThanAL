@@ -24,6 +24,9 @@ export default class Room extends BaseModel {
   @column()
   declare maintenance: boolean
 
+  @column()
+  declare capacity: number
+
   @hasMany(() => Picture)
   declare posts: HasMany<typeof Picture>
 

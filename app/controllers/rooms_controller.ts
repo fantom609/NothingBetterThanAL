@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { roomIndexParams } from '#validators/filter'
 import Room from '#models/room'
 import { createRoomValidator, editRoomValidator } from '#validators/room'
+import RoomPolicy from "#policies/room_policy";
 
 export default class RoomsController {
   /**
@@ -69,14 +70,18 @@ export default class RoomsController {
   /**
    * Handle form submission for the create action
    */
-  async store({ request, response }: HttpContext) {
+  async store({ request, response, bouncer }: HttpContext) {
+
+    if (await bouncer.with(RoomPolicy).denies('create')) {
+      return response.forbidden('Cannot create a room')
+    }
+
     const payload = await request.validateUsing(createRoomValidator)
     const room = await Room.firstOrCreate({
-      name: payload.name,
+      ...payload,
       description: payload.description ? payload.description : null,
-      type: payload.type,
-      disabled: payload.disabled,
       maintenance: false,
+
     })
 
     return response.status(201).send(room)
@@ -93,7 +98,12 @@ export default class RoomsController {
   /**
    * Handle form submission for the edit action
    */
-  async update({ params, request, response }: HttpContext) {
+  async update({ params, request, response,bouncer }: HttpContext) {
+
+    if (await bouncer.with(RoomPolicy).denies('update')) {
+      return response.forbidden('Cannot create a room')
+    }
+
     const room = await Room.findOrFail(params.id)
     const payload = await request.validateUsing(editRoomValidator)
 
@@ -102,6 +112,7 @@ export default class RoomsController {
     room.type = payload.type ? payload.type : room.type
     room.disabled = payload.disabled ? payload.disabled : room.disabled
     room.maintenance = payload.maintenance ? payload.maintenance : room.maintenance
+    room.capacity = payload.capacity ? payload.capacity : room.capacity
 
     await room.save()
 
@@ -111,7 +122,12 @@ export default class RoomsController {
   /**
    * Delete record
    */
-  async destroy({ params, response }: HttpContext) {
+  async destroy({ params, response, bouncer }: HttpContext) {
+
+    if (await bouncer.with(RoomPolicy).denies('destroy')) {
+      return response.forbidden('Cannot create a room')
+    }
+
     const room = await Room.findOrFail(params.id)
     await room.delete()
 

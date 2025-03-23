@@ -15,6 +15,7 @@ export default class extends BaseSeeder {
       type: "4D",
       disabled: false,
       maintenance: false,
+      capacity: 19
     })
     const movie = await Movie.create({
       name: "Lalaland",
