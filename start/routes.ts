@@ -33,7 +33,12 @@ router.get('/docs', async () => {
 router
   .group(() => {
     router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid())
-    router.resource('rooms', RoomsController).apiOnly().where('id', router.matchers.uuid())
+    router.resource('rooms', RoomsController).apiOnly().where('id', router.matchers.uuid()).use('*', middleware.auth())
+    router
+      .group(() => {
+        router.get('/:id/planning', [RoomsController, 'showPlanning']).where('id', router.matchers.uuid())
+      })
+      .prefix('rooms').use(middleware.auth())
     router.resource('sessions', SessionsController).apiOnly()
     router.resource('movies', MoviesController).apiOnly().where('id', router.matchers.uuid())
     router

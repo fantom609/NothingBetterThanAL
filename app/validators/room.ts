@@ -20,3 +20,12 @@ export const editRoomValidator = vine.compile(
     capacity: vine.number().positive().withoutDecimals().min(15).max(30).optional(),
   })
 )
+
+export const showPlanningValidator = vine.compile(
+  vine.object({
+    page: vine.number().positive().withoutDecimals().min(1).max(30).optional(),
+    limit: vine.number().positive().withoutDecimals().min(1).max(30).optional(),
+    startDate: vine.date(),
+    endDate: vine.date().afterField('startDate'),
+  })
+)
