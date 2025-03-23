@@ -1,13 +1,16 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { createMovieValidator, editMovieValidator } from '#validators/movie'
+import { createMovieValidator, editMovieValidator, showMovieValidator } from '#validators/movie'
 import Movie from '#models/movie'
 import { movieIndexParams } from '#validators/filter'
+import MoviePolicy from '#policies/movie_policy'
+import { showPlanningValidator } from '#validators/room'
+import Session from '#models/session'
 
 export default class MoviesController {
   /**
    * Display a list of resource
    */
-  async index({ request, logger, response, bouncer }: HttpContext) {
+  async index({ request, logger, response }: HttpContext) {
     logger.info('Index method called')
 
     await request.validateUsing(movieIndexParams)
@@ -60,7 +63,12 @@ export default class MoviesController {
   /**
    * Handle form submission for the create action
    */
-  async store({ request, response }: HttpContext) {
+  async store({ request, response, logger, bouncer }: HttpContext) {
+    if (await bouncer.with(MoviePolicy).denies('store')) {
+      logger.warn('User is not authorized to index a movie')
+      return response.forbidden('Cannot create a movie')
+    }
+
     const payload = await request.validateUsing(createMovieValidator)
     const movie = await Movie.firstOrCreate({
       name: payload.name,
@@ -81,7 +89,12 @@ export default class MoviesController {
   /**
    * Handle form submission for the edit action
    */
-  async update({ params, request, response }: HttpContext) {
+  async update({ params, request, response, bouncer, logger }: HttpContext) {
+    if (await bouncer.with(MoviePolicy).denies('update')) {
+      logger.warn('User is not authorized to update a movie')
+      return response.forbidden('Cannot create a movie')
+    }
+
     const movie = await Movie.findOrFail(params.id)
     const payload = await request.validateUsing(editMovieValidator)
 
@@ -96,10 +109,43 @@ export default class MoviesController {
   /**
    * Delete record
    */
-  async destroy({ params, response }: HttpContext) {
+  async destroy({ params, response, bouncer, logger }: HttpContext) {
+
+    if (await bouncer.with(MoviePolicy).denies('destroy')) {
+      logger.warn('User is not authorized to destroy a movie')
+      return response.forbidden('Cannot create a movie')
+    }
+
     const movie = await Movie.findOrFail(params.id)
     await movie.delete()
 
     return response.status(204).send({ message: 'Successfully deleted' })
+  }
+
+  async showPlanning({ params, response, request, logger }: HttpContext) {
+    logger.info(`ShowPlanning method called for film ID: ${params.id}`)
+
+    await request.validateUsing(showMovieValidator)
+
+    const startDate = request.input('startDate')
+    const endDate = request.input('endDate')
+    const page = request.input('page', 1)
+    let limit = request.input('limit', 25)
+
+    if (limit > 50) {
+      logger.warn(`Limit exceeded, setting limit to 50 instead of ${limit}`)
+      limit = 50
+    }
+
+    const sessions = await Session.query()
+      .whereHas('movie', (movieQuery) => {
+        movieQuery.where('id', params.id)
+      })
+      .where('start', '>=', startDate)
+      .where('start', '<=', endDate)
+      .paginate(page, limit)
+
+    logger.info(`Successfully retrieved ${sessions.getMeta().total} sessions for room ID ${params.id}`)
+    return response.status(200).send(sessions)
   }
 }

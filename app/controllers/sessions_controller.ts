@@ -83,9 +83,9 @@ export default class SessionsController {
 
     const room = await Room.findOrFail(payload.roomId)
     if (room.maintenance) {
-      logger.error(`Erreur : La salle ${room.name} est en maintenance`)
+      logger.error(`Error: Room ${room.name} is under maintenance`)
       return response.badRequest({
-        message: "Cette salle est en maintenance et ne peut pas être utilisée."
+        message: "This room is under maintenance and cannot be used."
       })
     }
 
@@ -94,13 +94,13 @@ export default class SessionsController {
     const start = DateTime.fromISO(payload.start)
     if (!start.isValid) {
       return response.badRequest({
-        message: "La date de début de la séance est invalide."
+        message: "The session start date is invalid."
       })
     }
 
     const end = start.plus({ minutes: movie.duration + 30 })
 
-    logger.info(`Vérification des conflits : ${start.toSQL()} → ${end.toSQL()}`)
+    logger.info(`Checking for conflicts: ${start.toSQL()} → ${end.toSQL()}`)
 
     const overlappingSession = await Session.query()
       .where('roomId', payload.roomId)
@@ -111,9 +111,9 @@ export default class SessionsController {
       .first()
 
     if (overlappingSession) {
-      logger.warn(`Conflit détecté : Une autre séance existe dans cette salle (${overlappingSession.id})`)
+      logger.warn(`Conflict detected: Another session exists in this room (${overlappingSession.id})`)
       return response.badRequest({
-        message: "Une autre séance est déjà programmée dans cette salle à cet horaire."
+        message: "Another session is already scheduled in this room at this time."
       })
     }
 
@@ -126,9 +126,9 @@ export default class SessionsController {
       .first()
 
     if (conflictingMovieSession) {
-      logger.warn(`Conflit détecté : Ce film est déjà projeté dans une autre salle (${conflictingMovieSession.roomId})`)
+      logger.warn(`Conflict detected: This movie is already being screened in another room (${conflictingMovieSession.roomId})`)
       return response.badRequest({
-        message: "Ce film est déjà diffusé dans une autre salle à cet horaire."
+        message: "This movie is already being screened in another room at this time."
       })
     }
 
@@ -140,7 +140,7 @@ export default class SessionsController {
       price: payload.price,
     })
 
-    logger.info(`Séance créée : ${session.id}`)
+    logger.info(`Session created: ${session.id}`)
     return response.status(201).send(session)
   }
 
@@ -177,7 +177,7 @@ export default class SessionsController {
       start = DateTime.fromISO(payload.start)
       if (!start.isValid) {
         return response.badRequest({
-          message: "La date de début de la séance est invalide."
+          message: "The session start date is invalid."
         })
       }
 
@@ -192,9 +192,9 @@ export default class SessionsController {
         .first()
 
       if (overlappingSession) {
-        logger.warn(`Conflit détecté : Une autre séance existe dans cette salle (${overlappingSession.id})`)
+        logger.warn(`Conflict detected: Another session exists in this room (${overlappingSession.id})`)
         return response.badRequest({
-          message: "Une autre séance est déjà programmée dans cette salle à cet horaire."
+          message: "Another session is already scheduled in this room at this time."
         })
       }
 
@@ -207,9 +207,9 @@ export default class SessionsController {
         .first()
 
       if (conflictingMovieSession) {
-        logger.warn(`Conflit détecté : Ce film est déjà projeté dans une autre salle (${conflictingMovieSession.roomId})`)
+        logger.warn(`Conflict detected: This movie is already being screened in another room (${conflictingMovieSession.roomId})`)
         return response.badRequest({
-          message: "Ce film est déjà diffusé dans une autre salle à cet horaire."
+          message: "This movie is already being screened in another room at this time."
         })
       }
     }

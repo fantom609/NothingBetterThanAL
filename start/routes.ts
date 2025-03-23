@@ -43,6 +43,14 @@ router
     router.resource('movies', MoviesController).params({id: 'id'}).where('id', router.matchers.uuid()).apiOnly().where('id', router.matchers.uuid()).use('*', middleware.auth())
     router
       .group(() => {
+        router
+          .get('/:id/planning', [MoviesController, 'showPlanning'])
+          .where('id', router.matchers.uuid())
+      })
+      .prefix('movies')
+      .use(middleware.auth())
+    router
+      .group(() => {
         router.post('login', [AuthController, 'login'])
         router.delete('logout', [AuthController, 'logout']).use(middleware.auth())
       })
