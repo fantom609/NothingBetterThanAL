@@ -20,6 +20,20 @@ export default class extends BaseSchema {
         .inTable('sessions')
         .onDelete('CASCADE')
         .notNullable()
+      table
+        .uuid('superticket_id')
+        .unsigned()
+        .references('id')
+        .inTable('supertickets')
+        .onDelete('CASCADE')
+        .nullable()
+      table
+        .uuid('transaction_id')
+        .unsigned()
+        .references('id')
+        .inTable('transactions')
+        .onDelete('CASCADE')
+        .notNullable()
       table.timestamps(true, true)
     })
   }

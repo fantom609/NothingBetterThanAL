@@ -8,6 +8,7 @@ export default class extends BaseSchema {
       table.uuid('id').primary()
       table.string('name').notNullable()
       table.string('description').nullable()
+      table.integer('capacity').notNullable()
       table.enum('type', ['2D', '3D', '4D']).notNullable()
       table.boolean('disabled').notNullable()
       table.boolean('maintenance').notNullable()

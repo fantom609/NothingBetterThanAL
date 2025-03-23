@@ -8,6 +8,7 @@ export default class extends BaseSeeder {
         name: "Salle 1",
         description: "Salle pas mal",
         type: "2D",
+        capacity: 20,
         disabled: false,
         maintenance: false,
         capacity: 25
@@ -16,6 +17,7 @@ export default class extends BaseSeeder {
         name: "Salle 2",
         description: "En travaux",
         type: "3D",
+        capacity: 30,
         disabled: false,
         maintenance: true,
         capacity : 15
@@ -24,6 +26,7 @@ export default class extends BaseSeeder {
         name: "Salle 3",
         description: "Intouchable",
         type: "4D",
+        capacity: 25,
         disabled: true,
         maintenance: false,
         capacity: 29
