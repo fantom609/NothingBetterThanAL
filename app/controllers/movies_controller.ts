@@ -7,7 +7,7 @@ export default class MoviesController {
   /**
    * Display a list of resource
    */
-  async index({ request, logger, response}: HttpContext) {
+  async index({ request, logger, response, bouncer }: HttpContext) {
     logger.info('Index method called')
 
     await request.validateUsing(movieIndexParams)

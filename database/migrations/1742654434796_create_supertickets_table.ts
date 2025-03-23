@@ -13,6 +13,13 @@ export default class extends BaseSchema {
         .inTable('users')
         .onDelete('CASCADE')
         .notNullable()
+      table
+        .uuid('transaction_id')
+        .unsigned()
+        .references('id')
+        .inTable('transactions')
+        .onDelete('CASCADE')
+        .notNullable()
       table.integer('remaining_uses').notNullable().defaultTo(10)
       table.timestamps(true, true)
     })

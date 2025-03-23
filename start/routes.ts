@@ -33,14 +33,14 @@ router.get('/docs', async () => {
 router
   .group(() => {
     router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use(['index', 'show'], middleware.auth())
-    router.resource('rooms', RoomsController).apiOnly().where('id', router.matchers.uuid()).use('*', middleware.auth())
+    router.resource('rooms', RoomsController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use('*', middleware.auth())
     router
       .group(() => {
         router.get('/:id/planning', [RoomsController, 'showPlanning']).where('id', router.matchers.uuid())
       })
       .prefix('rooms').use(middleware.auth())
-    router.resource('sessions', SessionsController).apiOnly()
-    router.resource('movies', MoviesController).apiOnly().where('id', router.matchers.uuid())
+    router.resource('sessions', SessionsController).params({id: 'id'}).where('id', router.matchers.uuid()).apiOnly().use('*', middleware.auth())
+    router.resource('movies', MoviesController).params({id: 'id'}).where('id', router.matchers.uuid()).apiOnly().where('id', router.matchers.uuid()).use('*', middleware.auth())
     router
       .group(() => {
         router.post('login', [AuthController, 'login'])
