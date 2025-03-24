@@ -203,7 +203,14 @@ export default class TransactionsController {
     const session = await Session.query()
       .where('id', payload.sessionId)
       .preload('movie')
+      .preload('tickets')
       .firstOrFail()
+
+    if(session.tickets.length === session.room.capacity){
+      logger.warn(`Room ${session.room.name} is full`)
+      return response.status(401).json({ message: 'Room is full' })
+    }
+
     const user = await User.findOrFail(auth.user!.id)
 
     const isTicketExist = await Session.query()
@@ -236,7 +243,11 @@ export default class TransactionsController {
         balance: user.balance,
       })
 
-      const superTicket = await Superticket.findOrFail(payload.superTicketId)
+      const superTicket = await Superticket.query()
+        .where('id', payload.superTicketId)
+        .where('user_id', auth.user!.id)
+        .firstOrFail()
+
       superTicket.remainingUses -= 1
 
       await superTicket.save()
@@ -276,5 +287,4 @@ export default class TransactionsController {
     return response.status(201).json(ticket)
 
   }
-
 }

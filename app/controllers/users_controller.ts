@@ -13,7 +13,7 @@ export default class UsersController {
 
     if (await bouncer.with(UserPolicy).denies('index')) {
       logger.warn('User is not authorized to index a room')
-      return response.forbidden('Cannot create a room')
+      return response.forbidden('Cannot get users')
     }
 
     await request.validateUsing(userIndexParams)
