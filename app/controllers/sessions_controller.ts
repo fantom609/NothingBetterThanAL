@@ -57,18 +57,39 @@ export default class SessionsController {
         }
       }
 
-      const session = await query
+      const sessions = await query
         .whereHas('room', (roomQuery) => {
           roomQuery.where('maintenance', false)
         })
         .preload('room')
         .preload('movie')
+        .preload('tickets')
         .paginate(page, limit)
 
-      session.baseUrl('/sessions')
-      logger.info(`Successfully retrieved ${session.getMeta().total} sessions`)
+      sessions.baseUrl('/sessions')
 
-      return response.status(200).json(session)
+      const modifiedSessions = sessions.toJSON()
+      modifiedSessions.data = modifiedSessions.data.map((session) => {
+        const sold = session.tickets.length
+        const available = session.room.capacity - sold
+        return {
+          id: session.id,
+          roomId: session.roomId,
+          movieId: session.movieId,
+          start: session.start,
+          end: session.end,
+          price: session.price,
+          createdAt: session.createdAt,
+          updatedAt: session.updatedAt,
+          sold,
+          available,
+        }
+      })
+
+
+      logger.info(`Successfully retrieved ${modifiedSessions.meta.total} sessions`)
+
+      return response.status(200).json(modifiedSessions)
     } catch (error) {
       logger.error('Error retrieving sessions ', error)
       return response.status(500).json({ error: 'Internal Server Error' })

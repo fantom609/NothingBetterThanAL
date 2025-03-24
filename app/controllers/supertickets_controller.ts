@@ -13,19 +13,7 @@ export default class SuperticketsController {
   /**
    * Handle form submission for the create action
    */
-  async store({ response, auth }: HttpContext) {
-    const superTicketExist = await Superticket.query().where('userId', auth.user!.id).first()
-    if(superTicketExist) {
-      superTicketExist.remainingUses += 10
-      superTicketExist.save()
-      return response.status(200).json(superTicketExist)
-    }else{
-      const superTicket = superTicket.create({
-        userId: auth.user!.id,
-        remainingUses: 10
-      })
-    }
-  }
+  async store({}: HttpContext) {}
 
 
   /**
