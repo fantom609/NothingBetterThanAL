@@ -231,4 +231,8 @@ export default class SessionsController {
 
     return response.status(204).send({ message: 'Successfully deleted' })
   }
+
+  async buyTicket({ params, response, request }: HttpContext) {
+    const session = await Session.findOrFail(params.id)
+  }
 }

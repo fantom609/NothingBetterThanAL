@@ -17,4 +17,7 @@ export default class TransactionPolicy extends BasePolicy {
     return user.role === ( UserRoles.ADMIN || UserRoles.SUPERADMIN )
   }
 
+  buySuperTicket(user: User): AuthorizerResponse {
+    return user.balance >= 40
+  }
 }

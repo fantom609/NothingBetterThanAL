@@ -5,6 +5,7 @@ import {transactionIndexParams, userIndexParams} from "#validators/filter";
 import User from "#models/user";
 import TransactionPolicy from "#policies/transaction_policy";
 import Transaction from "#models/transaction";
+import Superticket from '#models/superticket'
 
 export default class TransactionsController {
   /**
@@ -13,7 +14,7 @@ export default class TransactionsController {
   async index({ params, logger, bouncer, request, response }: HttpContext) {
     logger.info('Index method called')
 
-    const user = await User.findOrFail(params.user);
+    const user = await User.findOrFail(params.user)
 
     if (await bouncer.with(TransactionPolicy).denies('index', user)) {
       logger.warn('User is not authorized to index a transactions')
@@ -26,12 +27,7 @@ export default class TransactionsController {
     let limit = request.input('limit', 25)
     const sort = request.input('sort', 'id')
     const order = request.input('order', 'asc')
-    const filters = request.only([
-      'type',
-      'balance',
-      'createdAt',
-      'updatedAt',
-    ])
+    const filters = request.only(['type', 'balance', 'createdAt', 'updatedAt'])
 
     logger.info(
       `Request parameters - page: ${page}, limit: ${limit}, sort: ${sort}, order: ${order}`
@@ -75,19 +71,21 @@ export default class TransactionsController {
   /**
    * Handle form submission for the create action
    */
-  async store({ request, logger, auth,  response }: HttpContext) {
+  async store({ request, logger, auth, response }: HttpContext) {
     const payload = await request.validateUsing(createTransactionValidator)
 
     const user = auth.user!
 
-    if(payload.type === TransactionType.WITHDRAW) {
-
-      if(user.balance - payload.balance < 0) {
-        response.status(422).send({"message": "Insufficient balance. The requested amount exceeds your available balance."})
+    if (payload.type === TransactionType.WITHDRAW) {
+      if (user.balance - payload.balance < 0) {
+        response
+          .status(422)
+          .send({
+            message: 'Insufficient balance. The requested amount exceeds your available balance.',
+          })
         return
       }
       user.balance -= payload.balance
-
     } else {
       user.balance += payload.balance
     }
@@ -122,12 +120,7 @@ export default class TransactionsController {
     let limit = request.input('limit', 25)
     const sort = request.input('sort', 'id')
     const order = request.input('order', 'asc')
-    const filters = request.only([
-      'type',
-      'balance',
-      'createdAt',
-      'updatedAt',
-    ])
+    const filters = request.only(['type', 'balance', 'createdAt', 'updatedAt'])
 
     logger.info(
       `Request parameters - page: ${page}, limit: ${limit}, sort: ${sort}, order: ${order}`
@@ -165,6 +158,36 @@ export default class TransactionsController {
     } catch (error) {
       logger.error('Error retrieving users ', error)
       return response.status(500).json({ error: 'Internal Server Error' })
+    }
+  }
+
+  async buySuperTicket({ response, auth, bouncer, logger }: HttpContext) {
+    const superTicketExist = await Superticket.query().where('userId', auth.user!.id).first()
+    const user = await User.findOrFail(auth.user!.id)
+
+    if (await bouncer.with(TransactionPolicy).denies('buySuperTicket')) {
+      logger.warn(`${user.name} ${user.forname} doesn't have enough money`)
+      return response.forbidden('Cannot buy a superTicket')
+    }
+
+    const transaction = await Transaction.create({
+      type: TransactionType.SUPERTICKET,
+      userId: auth.user!.id,
+      balance: user.balance - 40,
+    })
+
+    if(superTicketExist) {
+      superTicketExist.remainingUses += 10
+      await superTicketExist.save()
+      return response.status(200).json(superTicketExist)
+    } else {
+      const superTicket = Superticket.create({
+        userId: auth.user!.id,
+        remainingUses: 10,
+        transactionId: transaction.id,
+      })
+
+      return response.status(201).json(superTicket)
     }
   }
 }

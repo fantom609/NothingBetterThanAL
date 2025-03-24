@@ -40,7 +40,14 @@ router
       .group(() => {
         router.get('/indexAll', [TransactionController, 'indexAll'])
       })
-      .prefix('transactions').use(middleware.auth())
+      .prefix('transactions')
+      .use(middleware.auth())
+    router
+      .group(() => {
+        router.post('/buySuperTicket', [TransactionController, 'buySuperTicket'])
+      })
+      .prefix('transactions')
+      .use(middleware.auth())
     router.resource('rooms', RoomsController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use('*', middleware.auth())
     router
       .group(() => {
@@ -48,6 +55,12 @@ router
       })
       .prefix('rooms').use(middleware.auth())
     router.resource('sessions', SessionsController).params({id: 'id'}).where('id', router.matchers.uuid()).apiOnly().use('*', middleware.auth())
+    router
+      .group(() => {
+        router.get('/:id/buy', [SessionsController, 'buyTicket'])
+      })
+      .prefix('sessions')
+      .use(middleware.auth())
     router.resource('movies', MoviesController).params({id: 'id'}).where('id', router.matchers.uuid()).apiOnly().where('id', router.matchers.uuid()).use('*', middleware.auth())
     router
       .group(() => {

@@ -8,4 +8,6 @@ export const UserRoles = {
 export const TransactionType = {
   WITHDRAW: 'WITHDRAW',
   DEPOSIT: 'DEPOSIT',
+  SUPERTICKET: 'SUPERTICKET',
+  TICKET: 'TICKET',
 }
