@@ -18,6 +18,7 @@ const SessionsController = () => import('#controllers/sessions_controller')
 const UsersController = () => import('#controllers/users_controller')
 const AuthController = () => import('#controllers/auth_controller')
 const TransactionController = () => import('#controllers/transactions_controller')
+const StatisticsController = () => import('#controllers/statistics_controller')
 
 
 router.get('/swagger', async () => {
@@ -82,6 +83,13 @@ router
         router.delete('logout', [AuthController, 'logout']).use(middleware.auth())
       })
       .prefix('auth')
+    router
+      .group(() => {
+        return router.get('/statistics/attendance', [StatisticsController, 'getAttendance'])
+      })
+      .prefix('api')
+      .use(middleware.auth())
+
   })
   .prefix('api')
 

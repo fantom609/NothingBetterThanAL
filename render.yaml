@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: NothingBetterThanAL
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DB_CONNECTION_STRING
+        fromDatabase:
+          name: NothingBetterThanAL
+          property: connectionString
+
+databases:
+  - name: NothingBetterThanAL
+    region: frankfurt
+    plan: free
