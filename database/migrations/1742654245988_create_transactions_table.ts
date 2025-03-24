@@ -13,7 +13,9 @@ export default class extends BaseSchema {
         .inTable('users')
         .onDelete('CASCADE')
         .notNullable()
-      table.enum('type', ['WITHDRAW', 'DEPOSIT']).notNullable()
+      table.enum('type', ['WITHDRAW', 'DEPOSIT', 'SUPERTICKET', 'TICKET']).notNullable()
+      table.float('balance').notNullable()
+      table.float('amount').notNullable()
       table.timestamps(true, true)
     })
   }

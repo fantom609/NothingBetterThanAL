@@ -5,7 +5,6 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.uuid('id').primary()
       table
         .uuid('user_id')
         .unsigned()
@@ -13,6 +12,7 @@ export default class extends BaseSchema {
         .inTable('users')
         .onDelete('CASCADE')
         .notNullable()
+        .primary()
       table
         .uuid('session_id')
         .unsigned()
@@ -20,6 +20,7 @@ export default class extends BaseSchema {
         .inTable('sessions')
         .onDelete('CASCADE')
         .notNullable()
+        .primary()
       table
         .uuid('superticket_id')
         .unsigned()

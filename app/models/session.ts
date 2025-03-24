@@ -37,9 +37,10 @@ export default class Session extends BaseModel {
   declare price: number
 
   @manyToMany(() => User, {
+    pivotTimestamps: true,
     pivotTable: 'tickets',
   })
-  declare users: ManyToMany<typeof User>
+  declare tickets: ManyToMany<typeof User>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

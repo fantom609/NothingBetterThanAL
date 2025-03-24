@@ -2,6 +2,7 @@ import User from '#models/user'
 import { BasePolicy } from '@adonisjs/bouncer'
 import { AuthorizerResponse } from '@adonisjs/bouncer/types'
 import {UserRoles} from "../utils/eums.js";
+import Session from '#models/session'
 
 export default class TransactionPolicy extends BasePolicy {
 
@@ -19,5 +20,9 @@ export default class TransactionPolicy extends BasePolicy {
 
   buySuperTicket(user: User): AuthorizerResponse {
     return user.balance >= 40
+  }
+
+  buyTicket(user: User, session: Session): AuthorizerResponse {
+    return user.balance <= session.price
   }
 }

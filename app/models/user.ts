@@ -41,9 +41,10 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare transactions: HasMany<typeof Transaction>
 
   @manyToMany(() => Session, {
+    pivotTimestamps: true,
     pivotTable: 'tickets',
   })
-  declare session: ManyToMany<typeof Session>
+  declare tickets: ManyToMany<typeof Session>
 
   @hasOne(() => Superticket)
   declare superticket: HasOne<typeof Superticket>

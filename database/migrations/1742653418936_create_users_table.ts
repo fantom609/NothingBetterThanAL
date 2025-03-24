@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.uuid('id').primary()
       table.string('password').notNullable()
       table.string('forname').notNullable()
-      table.integer('balance').notNullable()
+      table.float('balance').notNullable()
       table.string('name').notNullable()
       table.string('email').notNullable().unique()
       table.enum('role', ['ADMIN', 'USER', 'SUPERADMIN']).notNullable()
