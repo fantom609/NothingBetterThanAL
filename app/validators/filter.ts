@@ -72,12 +72,17 @@ export const transactionIndexParams = vine.compile(
   vine.object({
     page: vine.number().optional(),
     limit: vine.number().optional(),
-    sort: vine.enum([
-      'balance',
-      'type',
-      'createdAt',
-      'updatedAt',
-    ]).optional(),
+    sort: vine.enum(['balance', 'type', 'createdAt', 'updatedAt']).optional(),
     order: vine.enum(['asc', 'desc']).optional(),
+  })
+)
+
+
+export const statisticsIndexParams = vine.compile(
+  vine.object({
+    page: vine.number().positive().withoutDecimals().min(1).optional(),
+    limit: vine.number().positive().withoutDecimals().min(1).max(50).optional(),
+    start_date: vine.date().optional(),
+    end_date: vine.date().afterField('start_date').optional(),
   })
 )

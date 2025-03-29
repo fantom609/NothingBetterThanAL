@@ -4,9 +4,9 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    branch: main
-    buildCommand: npm install
-    startCommand: npm start
+    branch: feature/stats
+    buildCommand: node ace build
+    startCommand: node ace serve --hmr
     envVars:
       - key: DB_CONNECTION_STRING
         fromDatabase:
