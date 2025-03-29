@@ -6,6 +6,14 @@ import {loginValidator} from "#validators/user";
 
 export default class AuthController {
 
+  /**
+   * @login
+   * @requestBody {"email": "JohnDoe@gmail.com", "password": "JohnDoe20"}
+   * @responseBody 200 - {"message": "string", "data": { "user": "<User>", "access_token": "string" }} - Successful login
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   */
   async login({request }: HttpContext) {
     const payload = await request.validateUsing(loginValidator)
 
@@ -18,6 +26,12 @@ export default class AuthController {
     }
   }
 
+  /**
+   * @logout
+   * @responseBody 200 - Successful logout
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   */
   async logout({ auth }: HttpContext) {
 
     const user = auth.user!

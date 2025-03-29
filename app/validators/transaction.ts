@@ -9,7 +9,6 @@ export const createTransactionValidator = vine.compile(
 
 export const buyTicketValidator = vine.compile(
   vine.object({
-    sessionId: vine.string().uuid(),
-    superTicketId: vine.string().uuid().optional(),
+    superTicket: vine.boolean(),
   })
 )

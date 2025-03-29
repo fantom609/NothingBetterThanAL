@@ -48,12 +48,6 @@ router
       })
       .prefix('transactions')
       .use(middleware.auth())
-    router
-      .group(() => {
-        router.post('/buyTicket', [TransactionController, 'buyTicket'])
-      })
-      .prefix('transactions')
-      .use(middleware.auth())
     router.resource('rooms', RoomsController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use('*', middleware.auth())
     router
       .group(() => {
@@ -63,7 +57,7 @@ router
     router.resource('sessions', SessionsController).params({id: 'id'}).where('id', router.matchers.uuid()).apiOnly().use('*', middleware.auth())
     router
       .group(() => {
-        router.get('/:id/buy', [SessionsController, 'buyTicket'])
+        router.post('/:id/buy', [SessionsController, 'buyTicket'])
       })
       .prefix('sessions')
       .use(middleware.auth())

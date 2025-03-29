@@ -23,6 +23,6 @@ export default class TransactionPolicy extends BasePolicy {
   }
 
   buyTicket(user: User, session: Session): AuthorizerResponse {
-    return user.balance <= session.price
+    return user.balance >= session.price
   }
 }

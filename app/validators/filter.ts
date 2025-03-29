@@ -73,6 +73,7 @@ export const transactionIndexParams = vine.compile(
     page: vine.number().optional(),
     limit: vine.number().optional(),
     sort: vine.enum([
+      'amount',
       'balance',
       'type',
       'createdAt',
