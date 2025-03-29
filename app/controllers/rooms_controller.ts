@@ -9,7 +9,18 @@ import { cuid } from '@adonisjs/core/helpers'
 
 export default class RoomsController {
   /**
-   * Display a list of resource
+   * @index
+   * @paramQuery page - page - @type(number) @required @example(1)
+   * @paramQuery limit - limit - @type(number) @required @example(10)
+   * @paramQuery sort - sort - @type(string) @example(id)
+   * @paramQuery order - order - @enum(asc, desc)
+   * @paramQuery name - filter - @type(string)
+   * @responseBody 200 - <Room[]>.with(authorization).paginated(data, meta)
+   * @responseBody 400 - {"message": "string"} - Bad request
+   * @responseBody 404 - {"message": "string"} - User not found
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async index({ request, logger, response, auth }: HttpContext) {
     logger.info('Index method called')
@@ -75,7 +86,12 @@ export default class RoomsController {
   }
 
   /**
-   * Handle form submission for the create action
+   * @store
+   * @requestBody {"name": "test", "type": "2D", "capacity": 15, "disabled": true }
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async store({ request, response, bouncer, logger }: HttpContext) {
     logger.info('Store method called')
@@ -119,8 +135,12 @@ export default class RoomsController {
     logger.info(`Room created successfully with ID: ${room.id}`)
     return response.status(201).send(room)
   }
+
   /**
-   * Show individual record
+   * @show
+   * @responseBody 400 - {"message": "Invalid credentials"} - Access denied or token missing
+   * @responseBody 500 - {"message": "Internal server error"} - Unexpected error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async show({ params, response, logger }: HttpContext) {
     logger.info(`Show method called for room ID: ${params.id}`)
@@ -133,7 +153,12 @@ export default class RoomsController {
   }
 
   /**
-   * Handle form submission for the edit action
+   * @update
+   * @requestBody {"name": "La plus belle salle du monde"}
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async update({ params, request, response, bouncer, logger }: HttpContext) {
     logger.info(`Update method called for room ID: ${params.id}`)
@@ -161,7 +186,12 @@ export default class RoomsController {
   }
 
   /**
-   * Delete record
+   * @destroy
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @responseBody 200 - {message: "Successfully retrieved"}
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async destroy({ params, response, bouncer, logger }: HttpContext) {
     logger.info(`Destroy method called for room ID: ${params.id}`)

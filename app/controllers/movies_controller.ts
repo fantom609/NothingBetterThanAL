@@ -3,12 +3,22 @@ import { createMovieValidator, editMovieValidator, showMovieValidator } from '#v
 import Movie from '#models/movie'
 import { movieIndexParams } from '#validators/filter'
 import MoviePolicy from '#policies/movie_policy'
-import { showPlanningValidator } from '#validators/room'
 import Session from '#models/session'
 
 export default class MoviesController {
   /**
-   * Display a list of resource
+   * @index
+   * @paramQuery page - page - @type(number) @required @example(1)
+   * @paramQuery limit - limit - @type(number) @required @example(10)
+   * @paramQuery sort - sort - @type(string) @example(id)
+   * @paramQuery order - order - @enum(asc, desc)
+   * @paramQuery name - filter - @type(string)
+   * @responseBody 200 - <Movie[]>.with(authorization).paginated(data, meta)
+   * @responseBody 400 - {"message": "string"} - Bad request
+   * @responseBody 404 - {"message": "string"} - User not found
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async index({ request, logger, response }: HttpContext) {
     logger.info('Index method called')
@@ -61,7 +71,12 @@ export default class MoviesController {
   }
 
   /**
-   * Handle form submission for the create action
+   * @store
+   * @requestBody {"name": "La reine des neiges", "duration": 102 }
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async store({ request, response, logger, bouncer }: HttpContext) {
     if (await bouncer.with(MoviePolicy).denies('store')) {
@@ -79,7 +94,10 @@ export default class MoviesController {
   }
 
   /**
-   * Show individual record
+   * @show
+   * @responseBody 400 - {"message": "Invalid credentials"} - Access denied or token missing
+   * @responseBody 500 - {"message": "Internal server error"} - Unexpected error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async show({ params, response }: HttpContext) {
     const movie = await Movie.findOrFail(params.id)
@@ -87,7 +105,12 @@ export default class MoviesController {
   }
 
   /**
-   * Handle form submission for the edit action
+   * @update
+   * @requestBody {"name": "La belle au bois dormant"}
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async update({ params, request, response, bouncer, logger }: HttpContext) {
     if (await bouncer.with(MoviePolicy).denies('update')) {
@@ -107,7 +130,12 @@ export default class MoviesController {
   }
 
   /**
-   * Delete record
+   * @destroy
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @responseBody 200 - {message: "Successfully retrieved"}
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async destroy({ params, response, bouncer, logger }: HttpContext) {
 

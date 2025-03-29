@@ -1,14 +1,25 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import {createUserValidator, patchUserValidator} from "#validators/user";
-import User from "#models/user";
-import {userIndexParams} from "#validators/filter";
-import UserPolicy from "#policies/user_policy";
+import { createUserValidator, patchUserValidator } from "#validators/user";
+import User from '#models/user'
+import { userIndexParams } from '#validators/filter'
+import UserPolicy from '#policies/user_policy'
 
 export default class UsersController {
   /**
-   * Display a list of resource
+   * @index
+   * @paramQuery page - page - @type(number) @required @example(1)
+   * @paramQuery limit - limit - @type(number) @required @example(10)
+   * @paramQuery sort - sort - @type(string) @example(id)
+   * @paramQuery order - order - @enum(asc, desc)
+   * @paramQuery name - filter - @type(string)
+   * @responseBody 200 - <User[]>.with(authorization).paginated(data, meta)
+   * @responseBody 400 - {"message": "string"} - Bad request
+   * @responseBody 404 - {"message": "string"} - User not found
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
-  async index({logger, response, request, bouncer}: HttpContext) {
+  async index({ logger, response, request, bouncer}: HttpContext) {
     logger.info('Index method called')
 
     if (await bouncer.with(UserPolicy).denies('index')) {
@@ -72,12 +83,17 @@ export default class UsersController {
   }
 
   /**
-   * Handle form submission for the create action
+   * @store
+   * @requestBody {"name": "Machavoine", "forname": "Rémy", "balance": 10, "email": "rm@gmail.com", "password":"Esgi1234" }
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async store({ request, response }: HttpContext) {
     const payload = await request.validateUsing(createUserValidator)
 
-    const email = await User.findBy({email: payload.email})
+    const email = await User.findBy({ email: payload.email})
 
     if(email) {
       response.status(422).json({"message": "Email already exists"})
@@ -108,7 +124,12 @@ export default class UsersController {
   }
 
   /**
-   * Handle form submission for the edit action
+   * @update
+   * @requestBody {"name": "Mchvn" }
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async update({ params, response, request }: HttpContext) {
     const payload = await request.validateUsing(patchUserValidator)
@@ -121,7 +142,12 @@ export default class UsersController {
   }
 
   /**
-   * Delete record
+   * @destroy
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @responseBody 200 - {message: "Successfully retrieved"}
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async destroy({ params, response }: HttpContext) {
     const user = await User.findOrFail(params.id)

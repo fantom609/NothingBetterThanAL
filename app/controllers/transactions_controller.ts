@@ -10,7 +10,18 @@ import Session from '#models/session'
 
 export default class TransactionsController {
   /**
-   * Display a list of resource
+   * @index
+   * @paramQuery page - page - @type(number) @required @example(1)
+   * @paramQuery limit - limit - @type(number) @required @example(10)
+   * @paramQuery sort - sort - @type(string) @example(id)
+   * @paramQuery order - order - @enum(asc, desc)
+   * @paramQuery name - filter - @type(string)
+   * @responseBody 200 - <Transaction[]>.with(authorization).paginated(data, meta)
+   * @responseBody 400 - {"message": "string"} - Bad request
+   * @responseBody 404 - {"message": "string"} - User not found
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async index({ params, logger, bouncer, request, response }: HttpContext) {
     logger.info('Index method called')
@@ -69,8 +80,14 @@ export default class TransactionsController {
     }
   }
 
+
   /**
-   * Handle form submission for the create action
+   * @store
+   * @requestBody {"type": "DEPOSIT", "amount": 15 }
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
   async store({ request, auth, response }: HttpContext) {
     const payload = await request.validateUsing(createTransactionValidator)
@@ -101,14 +118,20 @@ export default class TransactionsController {
   }
 
   /**
-   * Show individual record
+   * @index
+   * @paramQuery page - page - @type(number) @required @example(1)
+   * @paramQuery limit - limit - @type(number) @required @example(10)
+   * @paramQuery sort - sort - @type(string) @example(id)
+   * @paramQuery order - order - @enum(asc, desc)
+   * @paramQuery name - filter - @type(string)
+   * @responseBody 200 - <Transaction[]>.with(authorization).paginated(data, meta)
+   * @responseBody 400 - {"message": "string"} - Bad request
+   * @responseBody 404 - {"message": "string"} - User not found
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
-  async show({ params }: HttpContext) {}
-
-  /**
-   * Show individual history record
-   */
-  async indexAll({ params, logger, bouncer, request, response, auth }: HttpContext) {
+  async indexAll({ logger, bouncer, request, response }: HttpContext) {
     logger.info('Index method called')
 
     if (await bouncer.with(TransactionPolicy).denies('indexAll')) {
@@ -122,7 +145,7 @@ export default class TransactionsController {
     let limit = request.input('limit', 25)
     const sort = request.input('sort', 'id')
     const order = request.input('order', 'asc')
-    const filters = request.only(['type', 'balance', 'createdAt', 'updatedAt'])
+    const filters = request.only(['amount', 'type', 'balance', 'createdAt', 'updatedAt'])
 
     logger.info(
       `Request parameters - page: ${page}, limit: ${limit}, sort: ${sort}, order: ${order}`
@@ -163,6 +186,14 @@ export default class TransactionsController {
     }
   }
 
+  /**
+   * @buySuperTicket
+   * @responseBody 200 - <Superticket>.with(authorization)
+   * @responseBody 400 - {"message": "string"} - Invalid credentials
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
+   */
   async buySuperTicket({ response, auth, bouncer, logger }: HttpContext) {
     const superTicketExist = await Superticket.query().where('userId', auth.user!.id).first()
     const user = await User.findOrFail(auth.user!.id)
@@ -195,96 +226,5 @@ export default class TransactionsController {
 
       return response.status(201).json(superTicket)
     }
-  }
-
-  async buyTicket({ request, response, auth, bouncer, logger }: HttpContext) {
-    const payload = await request.validateUsing(buyTicketValidator)
-
-    const session = await Session.query()
-      .where('id', payload.sessionId)
-      .preload('movie')
-      .preload('tickets')
-      .firstOrFail()
-
-    if(session.tickets.length === session.room.capacity){
-      logger.warn(`Room ${session.room.name} is full`)
-      return response.status(401).json({ message: 'Room is full' })
-    }
-
-    const user = await User.findOrFail(auth.user!.id)
-
-    const isTicketExist = await Session.query()
-      .whereHas('tickets', (query) => {
-        query.where('user_id', auth.user!.id)
-          .where('session_id', payload.sessionId)
-      })
-      .first()
-
-    if( isTicketExist) {
-      logger.warn(`${user.name} ${user.forname} already has a ticket for ${session.movie.name}`)
-      return response.status(403).json({ message: 'Ticket already exists' })
-    }
-
-    if (payload.superTicketId) await Superticket.findOrFail(payload.superTicketId)
-
-    if (
-      (await bouncer.with(TransactionPolicy).denies('buyTicket', session)) &&
-      payload.superTicketId === null
-    ) {
-      logger.warn(`${user.name} ${user.forname} doesn't have enough money`)
-      return response.forbidden('Cannot buy a Ticket')
-    }
-
-    if (payload.superTicketId) {
-      const transaction = await Transaction.create({
-        type: TransactionType.TICKET,
-        userId: auth.user!.id,
-        amount: 0,
-        balance: user.balance,
-      })
-
-      const superTicket = await Superticket.query()
-        .where('id', payload.superTicketId)
-        .where('user_id', auth.user!.id)
-        .firstOrFail()
-
-      superTicket.remainingUses -= 1
-
-      await superTicket.save()
-
-      await user.related('tickets').attach({
-        [session.id]: {
-          transaction_id: transaction.id,
-          superticket_id: payload.superTicketId,
-        },
-      })
-    } else {
-      const transaction = await Transaction.create({
-        type: TransactionType.TICKET,
-        userId: auth.user!.id,
-        amount: session.price,
-        balance: user.balance - session.price,
-      })
-
-      user.balance -= session.price
-      await user.save()
-
-      await user.related('tickets').attach({
-        [session.id]: {
-          transaction_id: transaction.id,
-          superticket_id: payload.superTicketId ? payload.superTicketId : null,
-        },
-      })
-    }
-
-    const ticket = await Session.query()
-      .whereHas('tickets', (query) => {
-        query.where('user_id', auth.user!.id).where('session_id', payload.sessionId)
-      })
-      .preload('tickets')
-      .first()
-
-    return response.status(201).json(ticket)
-
   }
 }
