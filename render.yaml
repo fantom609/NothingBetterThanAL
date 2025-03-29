@@ -5,7 +5,7 @@ services:
     region: frankfurt
     plan: free
     branch: feature/stats
-    buildCommand: node ace build
+    buildCommand: node install
     startCommand: node ace serve --hmr
     envVars:
       - key: DB_CONNECTION_STRING

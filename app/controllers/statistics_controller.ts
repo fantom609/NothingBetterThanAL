@@ -8,9 +8,13 @@ import { TransactionType } from '../utils/eums.js'
 import { statisticsIndexParams } from '#validators/filter'
 
 export default class StatisticsController {
+  /**
+   * Retrieve statistics with optional date filters
+   */
   async index({ request, response, logger }: HttpContext) {
-    logger.info('Statistiques globales demandées')
+    logger.info('Global statistics requested')
 
+    // Validate the request parameters
     await request.validateUsing(statisticsIndexParams)
 
     const page = request.input('page', 1)
@@ -18,44 +22,47 @@ export default class StatisticsController {
     const startDate = request.input('start_date')
     const endDate = request.input('end_date')
 
+    // Handle the limit restriction
     if (limit > 50) {
-      logger.warn(`Limite dépassée, réglée à 50 au lieu de ${limit}`)
+      logger.warn(`Limit exceeded, adjusting to 50 instead of ${limit}`)
       limit = 50
     }
 
     try {
       let query = Session.query().preload('movie').preload('room')
 
+      // Apply date filters if provided
       if (startDate) {
         const start = DateTime.fromISO(startDate)
         if (start.isValid) {
-          query = query.where('start', '>=', start.toSQL()!)
+          query = query.where('start', '>=', start.toSQL())
         }
       }
       if (endDate) {
         const end = DateTime.fromISO(endDate)
         if (end.isValid) {
-          query = query.where('end', '<=', end.toSQL()!)
+          query = query.where('end', '<=', end.toSQL())
         }
       }
 
       const sessions = await query.paginate(page, limit)
       sessions.baseUrl('/statistics')
 
-      const totalSessions = (await Session.query().count('* as total').first()) as {
-        total: number
-      } | null
+      // Retrieve total statistics
+      const totalSessions = (await Session.query().count('* as total').first()) as { total: number } | null
       const totalTicketsSold = (await Transaction.query()
         .where('type', TransactionType.TICKET)
         .count('* as total')
         .first()) as { total: number } | null
 
+      // Movie statistics
       const movieStats = await Movie.query()
         .select('title')
         .count('* as totalSessions')
         .leftJoin('sessions', 'movies.id', 'sessions.movieId')
         .groupBy('movies.id')
 
+      // Room statistics
       const roomStats = await Room.query()
         .select('name')
         .count('* as totalSessions')
@@ -70,34 +77,41 @@ export default class StatisticsController {
         sessions: sessions.toJSON(),
       }
 
-      logger.info('Statistiques récupérées avec succès')
+      logger.info('Statistics retrieved successfully')
       return response.status(200).json(statistics)
     } catch (error) {
-      logger.error('Erreur lors de la récupération des statistiques', error)
-      return response.status(500).json({ error: 'Erreur interne du serveur' })
+      logger.error('Error retrieving statistics', error)
+      return response.status(500).json({ error: 'Internal server error' })
     }
   }
 
+  /**
+   * Retrieve real-time statistics
+   */
   async realTimeStats({ response, logger }: HttpContext) {
-    logger.info('Statistiques en temps réel demandées')
+    logger.info('Real-time statistics requested')
 
     try {
-      const now = DateTime.now().toSQL()!
-      const lastHour = DateTime.now().minus({ hours: 1 }).toSQL()!
+      const now = DateTime.now().toSQL()
+      const lastHour = DateTime.now().minus({ hours: 1 }).toSQL()
 
-      const totalRooms = (await Room.query().count('* as total').first()) as {
-        total: number
-      } | null
+      // Total rooms count
+      const totalRooms = (await Room.query().count('* as total').first()) as { total: number } | null
+
+      // Active sessions count
       const activeSessions = (await Session.query()
         .where('start', '<=', now)
         .where('end', '>=', now)
         .count('* as active')
         .first()) as { active: number } | null
 
+      // Total tickets sold count
       const totalTicketsSold = (await Transaction.query()
         .where('type', TransactionType.TICKET)
         .count('* as total')
         .first()) as { total: number } | null
+
+      // Tickets sold in the last hour
       const activeTickets = (await Transaction.query()
         .where('type', TransactionType.TICKET)
         .where('created_at', '>=', lastHour)
@@ -111,11 +125,11 @@ export default class StatisticsController {
         activeTickets: activeTickets?.recent ?? 0,
       }
 
-      logger.info('Statistiques en temps réel récupérées avec succès')
+      logger.info('Real-time statistics retrieved successfully')
       return response.status(200).json(statistics)
     } catch (error) {
-      logger.error('Erreur lors de la récupération des statistiques en temps réel', error)
-      return response.status(500).json({ error: 'Erreur interne du serveur' })
+      logger.error('Error retrieving real-time statistics', error)
+      return response.status(500).json({ error: 'Internal server error' })
     }
   }
 }

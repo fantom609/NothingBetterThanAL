@@ -85,11 +85,11 @@ router
       .prefix('auth')
     router
       .group(() => {
-        return router.get('/statistics/attendance', [StatisticsController, 'getAttendance'])
+        router.get('/realTime', [StatisticsController, 'realTimeStats'])
+        router.get('/', [StatisticsController, 'index'])
       })
-      .prefix('api')
+      .prefix('statistics')
       .use(middleware.auth())
-
   })
   .prefix('api')
 
