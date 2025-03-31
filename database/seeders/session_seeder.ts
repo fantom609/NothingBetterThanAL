@@ -13,7 +13,6 @@ export default class extends BaseSeeder {
       name: 'Salle 4',
       description: "Salle 4D super stylée",
       type: "4D",
-      capacity: 30,
       disabled: false,
       maintenance: false,
       capacity: 19

@@ -11,7 +11,6 @@ export default class extends BaseSeeder {
         capacity: 20,
         disabled: false,
         maintenance: false,
-        capacity: 25
       },
       {
         name: "Salle 2",
@@ -20,7 +19,6 @@ export default class extends BaseSeeder {
         capacity: 30,
         disabled: false,
         maintenance: true,
-        capacity : 15
       },
       {
         name: "Salle 3",
@@ -29,7 +27,6 @@ export default class extends BaseSeeder {
         capacity: 25,
         disabled: true,
         maintenance: false,
-        capacity: 29
       }])
   }
 }
