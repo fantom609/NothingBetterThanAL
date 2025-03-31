@@ -1,12 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { buyTicketValidator, createTransactionValidator } from '#validators/transaction'
+import { createTransactionValidator } from '#validators/transaction'
 import { TransactionType } from "../utils/eums.js";
 import {transactionIndexParams, userIndexParams} from "#validators/filter";
 import User from "#models/user";
 import TransactionPolicy from "#policies/transaction_policy";
 import Transaction from "#models/transaction";
 import Superticket from '#models/superticket'
-import Session from '#models/session'
 
 export default class TransactionsController {
   /**

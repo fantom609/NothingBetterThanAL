@@ -118,7 +118,7 @@ export default class UsersController {
       return response.forbidden('Cannot show a room')
     }
 
-    const user = await User.query().where('id', params.id).preload('session').preload('superticket').preload('transactions').firstOrFail()
+    const user = await User.query().where('id', params.id).preload('tickets').preload('superticket').preload('transactions').firstOrFail()
 
     response.ok(user)
   }
