@@ -32,7 +32,6 @@ router.get('/docs', async () => {
   // return AutoSwagger.default.rapidoc("/swagger", "view"); // to use RapiDoc instead (pass "view" default, or "read" to change the render-style)
 })
 
-
 router
   .group(() => {
     router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use(['index', 'show'], middleware.auth())
