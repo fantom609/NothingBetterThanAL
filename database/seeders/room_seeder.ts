@@ -20,13 +20,6 @@ export default class extends BaseSeeder {
         disabled: false,
         maintenance: true,
       },
-      {
-        name: "Salle 3",
-        description: "Intouchable",
-        type: "4D",
-        capacity: 25,
-        disabled: true,
-        maintenance: false,
-      }])
+    ])
   }
 }

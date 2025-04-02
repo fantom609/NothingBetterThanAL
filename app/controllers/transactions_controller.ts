@@ -206,7 +206,7 @@ export default class TransactionsController {
       type: TransactionType.SUPERTICKET,
       userId: auth.user!.id,
       balance: user.balance - 40,
-      amount: 40,
+      amount: -40,
     })
 
     user.balance -= 40

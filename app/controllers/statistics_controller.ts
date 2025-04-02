@@ -5,7 +5,7 @@ import Movie from '#models/movie'
 import Room from '#models/room'
 import Transaction from '#models/transaction'
 import { TransactionType } from '../utils/eums.js'
-import { statisticsIndexParams } from '#validators/filter'
+import {realTimeStatistics, statisticsIndexParams} from '#validators/filter'
 
 export default class StatisticsController {
   /**
@@ -83,48 +83,22 @@ export default class StatisticsController {
   }
 
   /**
-   * Retrieve real-time statistics
+   * @realTimeStats
+   * @paramQuery start - start - @type(string) @required
+   * @paramQuery end - end - @type(string) @required
+   * @responseBody 400 - {"message": "string"} - Bad request
+   * @responseBody 404 - {"message": "string"} - User not found
+   * @responseBody 422 - {"message": "string"} - Validation error
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
    */
-  async realTimeStats({ response, logger }: HttpContext) {
+  async realTimeStats({ request, logger }: HttpContext) {
     logger.info('Real-time statistics requested')
 
-    try {
-      const now = DateTime.now().toSQL()
-      const lastHour = DateTime.now().minus({ hours: 1 }).toSQL()
+    await request.validateUsing(realTimeStatistics)
 
-      const totalRooms = (await Room.query().count('* as total').first()) as {
-        total: number
-      } | null
-
-      const activeSessions = (await Session.query()
-        .where('start', '<=', now)
-        .where('end', '>=', now)
-        .count('* as active')
-        .first()) as { active: number } | null
-
-      const totalTicketsSold = (await Transaction.query()
-        .where('type', TransactionType.TICKET)
-        .count('* as total')
-        .first()) as { total: number } | null
-
-      const activeTickets = (await Transaction.query()
-        .where('type', TransactionType.TICKET)
-        .where('created_at', '>=', lastHour)
-        .count('* as recent')
-        .first()) as { recent: number } | null
-
-      const statistics = {
-        totalRooms: totalRooms?.total ?? 0,
-        activeSessions: activeSessions?.active ?? 0,
-        totalTicketsSold: totalTicketsSold?.total ?? 0,
-        activeTickets: activeTickets?.recent ?? 0,
-      }
-
-      logger.info('Real-time statistics retrieved successfully')
-      return response.status(200).json(statistics)
-    } catch (error) {
-      logger.error('Error retrieving real-time statistics', error)
-      return response.status(500).json({ error: 'Internal server error' })
-    }
+    const start = request.input('start')
+    const end = request.input('end')
+    
   }
 }

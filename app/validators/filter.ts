@@ -92,3 +92,10 @@ export const statisticsIndexParams = vine.compile(
     end_date: vine.date().afterField('start_date').optional(),
   })
 )
+
+export const realTimeStatistics = vine.compile(
+  vine.object({
+    start: vine.string().trim().optional(),
+    end: vine.string().trim().optional(),
+  })
+)

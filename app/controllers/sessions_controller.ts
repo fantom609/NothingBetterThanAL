@@ -367,7 +367,7 @@ export default class SessionsController {
       const transaction = await Transaction.create({
         type: TransactionType.TICKET,
         userId: auth.user!.id,
-        amount: session.price,
+        amount: session.price * -1,
         balance: user.balance - session.price,
       })
 
