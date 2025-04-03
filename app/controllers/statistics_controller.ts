@@ -6,6 +6,7 @@ import Room from '#models/room'
 import Transaction from '#models/transaction'
 import { TransactionType } from '../utils/eums.js'
 import {realTimeStatistics, statisticsIndexParams} from '#validators/filter'
+import Ticket from "#models/ticket";
 
 export default class StatisticsController {
   /**
@@ -87,18 +88,29 @@ export default class StatisticsController {
    * @paramQuery start - start - @type(string) @required
    * @paramQuery end - end - @type(string) @required
    * @responseBody 400 - {"message": "string"} - Bad request
-   * @responseBody 404 - {"message": "string"} - User not found
    * @responseBody 422 - {"message": "string"} - Validation error
    * @responseBody 500 - {"message": "string"} - Internal server error
    * @authorization Bearer token required - Access is restricted to authenticated users
    */
-  async realTimeStats({ request, logger }: HttpContext) {
+  async realTimeStats({ response, request, logger }: HttpContext) {
     logger.info('Real-time statistics requested')
 
     await request.validateUsing(realTimeStatistics)
 
-    const start = request.input('start')
-    const end = request.input('end')
-    
+    let start = request.input('start')
+    let end = request.input('end')
+
+    start = DateTime.fromISO(start).startOf('day').toUTC().toISO()
+    end = DateTime.fromISO(end).startOf('day').toUTC().toISO()
+
+    const tickets = await Ticket.query()
+      .join('sessions', 'sessions.id', '=', 'tickets.session_id')
+      .where('tickets.created_at', '>', start)
+      .where('tickets.created_at', '<', end)
+      .whereNull('tickets.superticket_id')
+      .sum('sessions.price as total_price')
+
+    return response.status(200).json({ totalPrice: tickets[0].$extras.total_price || 0 })
+
   }
 }
