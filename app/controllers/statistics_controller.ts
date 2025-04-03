@@ -52,8 +52,9 @@ export default class StatisticsController {
 
       return response.status(200).json({
         totalPrice: totalPrice,
+        totalTickets: tickets.length,
         topSession: {
-          sessionId: topSession.session.id,
+          session: topSession.session.id,
           price: topSession.session.price,
           movieTitle: topSession.session.movie.name,
         },
