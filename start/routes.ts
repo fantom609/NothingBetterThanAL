@@ -79,7 +79,6 @@ router
     router
       .group(() => {
         router.get('/realTime', [StatisticsController, 'realTimeStats'])
-        router.get('/', [StatisticsController, 'index'])
       })
       .prefix('statistics')
       .use(middleware.auth())

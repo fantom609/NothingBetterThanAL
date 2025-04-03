@@ -1,88 +1,9 @@
 import { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
-import Session from '#models/session'
-import Movie from '#models/movie'
-import Room from '#models/room'
-import Transaction from '#models/transaction'
-import { TransactionType } from '../utils/eums.js'
-import {realTimeStatistics, statisticsIndexParams} from '#validators/filter'
-import Ticket from "#models/ticket";
+import { realTimeStatistics} from '#validators/filter'
+import Ticket from '#models/ticket'
 
 export default class StatisticsController {
-  /**
-   * Retrieve statistics with optional date filters
-   */
-  async index({ request, response, logger }: HttpContext) {
-    logger.info('Global statistics requested')
-
-    await request.validateUsing(statisticsIndexParams)
-
-    const page = request.input('page', 1)
-    let limit = request.input('limit', 25)
-    const startDate = request.input('start_date')
-    const endDate = request.input('end_date')
-
-    if (limit > 50) {
-      logger.warn(`Limit exceeded, adjusting to 50 instead of ${limit}`)
-      limit = 50
-    }
-
-    try {
-      let query = Session.query().preload('movie').preload('room')
-
-      // Apply date filters if provided
-      if (startDate) {
-        const start = DateTime.fromISO(startDate)
-        if (start.isValid) {
-          query = query.where('start', '>=', start.toSQL())
-        }
-      }
-      if (endDate) {
-        const end = DateTime.fromISO(endDate)
-        if (end.isValid) {
-          query = query.where('end', '<=', end.toSQL())
-        }
-      }
-
-      const sessions = await query.paginate(page, limit)
-      sessions.baseUrl('/statistics')
-
-      const totalSessions = (await Session.query().count('* as total').first()) as {
-        total: number
-      } | null
-      const totalTicketsSold = (await Transaction.query()
-        .where('type', TransactionType.TICKET)
-        .count('* as total')
-        .first()) as { total: number } | null
-
-      const movieStats = await Movie.query()
-        .select('title')
-        .count('* as totalSessions')
-        .leftJoin('sessions', 'movies.id', 'sessions.movieId')
-        .groupBy('movies.id')
-
-      const roomStats = await Room.query()
-        .select('name')
-        .count('* as totalSessions')
-        .leftJoin('sessions', 'rooms.id', 'sessions.roomId')
-        .groupBy('rooms.id')
-
-      const statistics = {
-        totalSessions: totalSessions?.total ?? 0,
-        totalTicketsSold: totalTicketsSold?.total ?? 0,
-        movieStats,
-        roomStats,
-        sessions: sessions.toJSON(),
-      }
-
-      logger.info('Statistics retrieved successfully')
-      return response.status(200).json(statistics)
-    } catch (error) {
-      logger.error('Error retrieving statistics', error)
-      return response.status(500).json({ error: 'Internal server error' })
-    }
-  }
-
   /**
    * @realTimeStats
    * @paramQuery start - start - @type(string) @required
@@ -104,13 +25,42 @@ export default class StatisticsController {
     end = DateTime.fromISO(end).startOf('day').toUTC().toISO()
 
     const tickets = await Ticket.query()
-      .join('sessions', 'sessions.id', '=', 'tickets.session_id')
+      .preload('session', (sessionQuery) => {
+        sessionQuery.preload('movie')
+      })
       .where('tickets.created_at', '>', start)
       .where('tickets.created_at', '<', end)
       .whereNull('tickets.superticket_id')
-      .sum('sessions.price as total_price')
 
-    return response.status(200).json({ totalPrice: tickets[0].$extras.total_price || 0 })
+    const totalPrice = tickets.reduce((sum, ticket) => sum + ticket.session.price, 0)
 
+    const topSession = tickets.reduce((maxTicket, ticket) => {
+      return ticket.session.price > maxTicket.session.price ? ticket : maxTicket
+    }, tickets[0])
+
+    if (tickets.length > 0) {
+      const movieCounts = tickets.reduce((acc, ticket) => {
+        const movieId = ticket.session.movie.id
+        acc[movieId] = (acc[movieId] || 0) + 1
+        return acc
+      }, {})
+
+      const mostWatchedMovieId = Object.keys(movieCounts).reduce((a, b) => movieCounts[a] > movieCounts[b] ? a : b);
+      const mostWatchedMovie = tickets.find(
+        (ticket) => ticket.session.movie.id.toString() === mostWatchedMovieId
+      )
+
+      return response.status(200).json({
+        totalPrice: totalPrice,
+        topSession: {
+          sessionId: topSession.session.id,
+          price: topSession.session.price,
+          movieTitle: topSession.session.movie.name,
+        },
+        mostWatchedMovie: mostWatchedMovie.session.movie.name,
+      })
+    }
+
+    return response.status(200).json({})
   }
 }
