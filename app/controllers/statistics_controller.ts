@@ -1,6 +1,6 @@
 import { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
-import { realTimeStatistics} from '#validators/filter'
+import { realTimeStatistics } from '#validators/filter'
 import Ticket from '#models/ticket'
 
 export default class StatisticsController {
@@ -39,13 +39,15 @@ export default class StatisticsController {
     }, tickets[0])
 
     if (tickets.length > 0) {
-      const movieCounts = tickets.reduce((acc, ticket) => {
+      const movieCounts = tickets.reduce((acc: { [key: string]: number }, ticket) => {
         const movieId = ticket.session.movie.id
         acc[movieId] = (acc[movieId] || 0) + 1
         return acc
       }, {})
 
-      const mostWatchedMovieId = Object.keys(movieCounts).reduce((a, b) => movieCounts[a] > movieCounts[b] ? a : b);
+      const mostWatchedMovieId = Object.keys(movieCounts).reduce((a, b) =>
+        movieCounts[a] > movieCounts[b] ? a : b
+      )
       const mostWatchedMovie = tickets.find(
         (ticket) => ticket.session.movie.id.toString() === mostWatchedMovieId
       )
@@ -58,7 +60,7 @@ export default class StatisticsController {
           price: topSession.session.price,
           movieTitle: topSession.session.movie.name,
         },
-        mostWatchedMovie: mostWatchedMovie.session.movie.name,
+        mostWatchedMovie: mostWatchedMovie!.session.movie.name,
       })
     }
 
