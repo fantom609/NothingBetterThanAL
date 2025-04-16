@@ -11,6 +11,7 @@ import Superticket from '#models/superticket'
 import TransactionPolicy from '#policies/transaction_policy'
 import Transaction from '#models/transaction'
 import { TransactionType } from '../utils/eums.js'
+import SessionPolicy from '#policies/session_policy'
 
 export default class SessionsController {
   /**
@@ -91,8 +92,9 @@ export default class SessionsController {
         const available = session.room.capacity - sold
         return {
           id: session.id,
-          roomId: session.roomId,
-          movieId: session.movieId,
+          room: session.room,
+          movie: session.movie,
+          tickets: session.tickets,
           start: session.start,
           end: session.end,
           price: session.price,
@@ -121,7 +123,12 @@ export default class SessionsController {
    * @responseBody 500 - {"message": "string"} - Internal server error
    * @authorization Bearer token required - Access is restricted to authenticated users
    */
-  async store({ request, response, logger }: HttpContext) {
+  async store({ request, response, logger, bouncer }: HttpContext) {
+    if(await bouncer.with(SessionPolicy).denies('store')){
+      logger.warn('User is not authorized to create a session')
+      return response.forbidden('Cannot create a session')
+    }
+
     const payload = await request.validateUsing(createSessionValidator)
 
     const room = await Room.findOrFail(payload.roomId)
@@ -206,7 +213,12 @@ export default class SessionsController {
    * @responseBody 500 - {"message": "string"} - Internal server error
    * @authorization Bearer token required - Access is restricted to authenticated users
    */
-  async update({ params, request, response, logger }: HttpContext) {
+  async update({ params, request, response, logger, bouncer }: HttpContext) {
+    if(await bouncer.with(SessionPolicy).denies('update')){
+      logger.warn('User is not authorized to create a session')
+      return response.forbidden('Cannot create a session')
+    }
+
     const session = await Session.findOrFail(params.id)
     const payload = await request.validateUsing(editSessionValidator)
 
@@ -280,9 +292,18 @@ export default class SessionsController {
    * @responseBody 200 - {message: "Successfully retrieved"}
    * @authorization Bearer token required - Access is restricted to authenticated users
    */
-  async destroy({ params, response }: HttpContext) {
-    const session = await Session.findOrFail(params.id)
-    await session.delete()
+  async destroy({ params, response, bouncer, logger }: HttpContext) {
+    if(await bouncer.with(SessionPolicy).denies('destroy')){
+      logger.warn('User is not authorized to create a session')
+      return response.forbidden('Cannot create a session')
+    }
+    const session = await Session.query().preload('tickets').where('id', params.id).firstOrFail()
+
+    if(session.tickets.length > 0){
+      session.tickets.forEach((ticket) => {
+        console.log(ticket)
+      })
+    }
 
     return response.status(204).send({ message: 'Successfully deleted' })
   }
