@@ -195,7 +195,7 @@ export default class TransactionsController {
    */
   async buySuperTicket({ response, auth, bouncer, logger }: HttpContext) {
     const superTicketExist = await Superticket.query().where('userId', auth.user!.id).first()
-    const user = await User.findOrFail(auth.user!.id)
+    const user = auth.user!
 
     if (await bouncer.with(TransactionPolicy).denies('buySuperTicket')) {
       logger.warn(`${user.name} ${user.forname} doesn't have enough money`)
@@ -215,7 +215,7 @@ export default class TransactionsController {
     if (superTicketExist) {
       superTicketExist.remainingUses += 10
       await superTicketExist.save()
-      return response.status(200).json(superTicketExist)
+      return response.status(201).json(superTicketExist)
     } else {
       const superTicket = await Superticket.create({
         userId: auth.user!.id,

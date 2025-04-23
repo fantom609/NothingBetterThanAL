@@ -3,6 +3,8 @@ import { createUserValidator, patchUserValidator } from "#validators/user";
 import User from '#models/user'
 import { userIndexParams } from '#validators/filter'
 import UserPolicy from '#policies/user_policy'
+import MoviePolicy from '#policies/movie_policy'
+import { UserRoles } from '../utils/eums.js'
 
 export default class UsersController {
   /**
@@ -131,11 +133,16 @@ export default class UsersController {
    * @responseBody 500 - {"message": "string"} - Internal server error
    * @authorization Bearer token required - Access is restricted to authenticated users
    */
-  async update({ params, response, request }: HttpContext) {
+  async update({ params, response, request, auth, logger }: HttpContext) {
     const payload = await request.validateUsing(patchUserValidator)
-
     const user = await User.findOrFail(params.id)
 
+    if(payload.role){
+      if(auth.user!.role !== (UserRoles.ADMIN || UserRoles.SUPERADMIN)){
+        logger.warn('User is not authorized to update a user')
+        return response.forbidden('Cannot update a user')
+      }
+    }
     const patchUser = await user.merge(payload).save()
 
     response.ok(patchUser)
@@ -149,8 +156,13 @@ export default class UsersController {
    * @responseBody 200 - {message: "Successfully retrieved"}
    * @authorization Bearer token required - Access is restricted to authenticated users
    */
-  async destroy({ params, response }: HttpContext) {
+  async destroy({ params, response, bouncer, logger }: HttpContext) {
     const user = await User.findOrFail(params.id)
+
+    if (await bouncer.with(UserPolicy).denies('destroy', user)) {
+      logger.warn('User is not authorized to delete a user')
+      return response.forbidden('Cannot delete a user')
+    }
 
     await user.delete()
 

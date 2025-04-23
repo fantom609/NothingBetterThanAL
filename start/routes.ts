@@ -34,7 +34,7 @@ router.get('/docs', async () => {
 
 router
   .group(() => {
-    router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use(['index', 'show'], middleware.auth())
+    router.resource('users', UsersController).apiOnly().params({id: 'id'}).where('id', router.matchers.uuid()).use(['index', 'show', 'destroy', 'update'], middleware.auth())
     router.resource('users.transactions', TransactionController).apiOnly().params({users: 'user', transactions: 'transaction'}).where('id', router.matchers.uuid()).use('*', middleware.auth())
     router
       .group(() => {
@@ -44,7 +44,7 @@ router
       .use(middleware.auth())
     router
       .group(() => {
-        router.post('/buySuperTicket', [TransactionController, 'buySuperTicket'])
+        router.post('/superticket', [TransactionController, 'buySuperTicket'])
       })
       .prefix('transactions')
       .use(middleware.auth())

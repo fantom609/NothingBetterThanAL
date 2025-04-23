@@ -12,4 +12,10 @@ export default class UserPolicy extends BasePolicy {
   show(user: User): AuthorizerResponse {
     return user.role === ( UserRoles.ADMIN || UserRoles.SUPERADMIN )
   }
+
+  destroy(userAuthenticated: User, userDeleted: User): AuthorizerResponse {
+    return (
+      userAuthenticated.id === userDeleted.id || userAuthenticated.role === UserRoles.SUPERADMIN || userAuthenticated.role === UserRoles.ADMIN
+    )
+  }
 }
