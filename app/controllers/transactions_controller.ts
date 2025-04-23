@@ -215,7 +215,7 @@ export default class TransactionsController {
     if (superTicketExist) {
       superTicketExist.remainingUses += 10
       await superTicketExist.save()
-      return response.status(200).json(superTicketExist)
+      return response.status(201).json(superTicketExist)
     } else {
       const superTicket = await Superticket.create({
         userId: auth.user!.id,

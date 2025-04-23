@@ -44,7 +44,7 @@ router
       .use(middleware.auth())
     router
       .group(() => {
-        router.post('/buySuperTicket', [TransactionController, 'buySuperTicket'])
+        router.post('/superticket', [TransactionController, 'buySuperTicket'])
       })
       .prefix('transactions')
       .use(middleware.auth())

@@ -1,7 +1,6 @@
 import { test } from '@japa/runner'
 import testUtils from '@adonisjs/core/services/test_utils'
 import User from '#models/user'
-import vine from '@vinejs/vine'
 
 test.group('Transaction create', async (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -37,7 +36,7 @@ test.group('Transaction create', async (group) => {
 
     const token = await User.accessTokens.create(user)
 
-    const res = await client.post(`/api/transactions/buySuperTicket`).bearerToken(token.value!.release())
+    const res = await client.post(`/api/transactions/superticket`).bearerToken(token.value!.release())
 
     res.assertCreated()
   })

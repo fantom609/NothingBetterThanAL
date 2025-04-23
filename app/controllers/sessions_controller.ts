@@ -12,6 +12,7 @@ import TransactionPolicy from '#policies/transaction_policy'
 import Transaction from '#models/transaction'
 import { TransactionType } from '../utils/eums.js'
 import SessionPolicy from '#policies/session_policy'
+import Ticket from '#models/ticket'
 
 export default class SessionsController {
   /**
@@ -297,14 +298,24 @@ export default class SessionsController {
       logger.warn('User is not authorized to create a session')
       return response.forbidden('Cannot create a session')
     }
-    const session = await Session.query().preload('tickets').where('id', params.id).firstOrFail()
 
+    const session = await Session.query().preload('tickets').where('id', params.id).firstOrFail()
+    //return response.status(200).send(session)
     if(session.tickets.length > 0){
-      session.tickets.forEach((ticket) => {
-        console.log(ticket)
-      })
+      for (const ticket of session.tickets) {
+        const tk = await Ticket.query().where('userId', ticket.id).where('sessionId', session.id).firstOrFail()
+        if (tk.superticketId !== null){
+          const superticket = await Superticket.findOrFail(tk.superticketId)
+          superticket.remainingUses += 1
+        } else {
+          const user = await User.findOrFail(ticket.id)
+          user.balance += session.price
+          user.save()
+        }
+      }
     }
 
+    await session.delete()
     return response.status(204).send({ message: 'Successfully deleted' })
   }
 
