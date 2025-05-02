@@ -33,8 +33,11 @@ services:
     container_name: nbta_api
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
+      DB_HOST: nbta_db
       DATABASE_URL: "postgres://adonis:secret@nbta_db:5432/adonis_db"
       MINIO_ENDPOINT: "http://nbta_minio:9000"
       MINIO_ACCESS_KEY: "minioadmin"
