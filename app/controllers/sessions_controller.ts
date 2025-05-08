@@ -338,91 +338,70 @@ export default class SessionsController {
       .preload('room')
       .firstOrFail()
 
-    if(session.tickets.length === session.room.capacity){
+    if (session.tickets.length >= session.room.capacity) {
       logger.warn(`Room ${session.room.name} is full`)
       return response.status(401).json({ message: 'Room is full' })
     }
 
     const user = await User.findOrFail(auth.user!.id)
 
-    const isTicketExist = await Session.query()
-      .whereHas('tickets', (query) => {
-        query.where('user_id', auth.user!.id)
-          .where('session_id', params.id)
-      })
-      .first()
+    try {
+      if (payload.superTicket === true) {
+        const superTicket = await Superticket.query()
+          .where('user_id', auth.user!.id)
+          .where('remaining_uses', '>', 0)
+          .firstOrFail()
 
-    if( isTicketExist) {
-      logger.warn(`${user.name} ${user.forname} already has a ticket for ${session.movie.name}`)
-      return response.status(403).json({ message: 'Ticket already exists' })
+        const transaction = await Transaction.create({
+          type: TransactionType.TICKET,
+          userId: user.id,
+          amount: 0,
+          balance: user.balance,
+        })
+
+        superTicket.remainingUses -= 1
+
+        await user.related('tickets').attach({
+          [session.id]: {
+            transaction_id: transaction.id,
+            superticket_id: superTicket.id,
+          },
+        })
+        await superTicket.save()
+
+        return response.status(201).json({ message: 'Ticket purchased with superticket' })
+      } else {
+        if (await bouncer.with(TransactionPolicy).denies('buyTicket', session)) {
+          logger.warn(`${user.name} ${user.forname} doesn't have enough money`)
+          return response.forbidden('Cannot buy a Ticket. Not enough money.')
+        }
+        const transaction = await Transaction.create({
+          type: TransactionType.TICKET,
+          userId: user.id,
+          amount: -session.price,
+          balance: user.balance - session.price,
+        })
+
+        user.balance -= session.price
+        await Ticket.firstOrCreate({
+          userId: user.id,
+          sessionId: session.id,
+          superticketId: null,
+          transactionId: transaction.id,
+        })
+
+        await user.save()
+
+        return response.status(201).json({ message: 'Ticket purchased successfully' })
+      }
+    } catch (error) {
+      if (error.code === '23505') {
+        logger.error('Duplicate ticket detected (likely due to race condition)', error)
+        return response.status(409).json({ message: 'Ticket already exists' })
+      }
+
+      logger.error('Unexpected error while buying ticket', error)
+      return response.status(500).json({ message: 'An unexpected error occurred' })
     }
-
-    if (payload.superTicket === true) {
-      await Superticket.query()
-        .where('user_id', auth.user!.id)
-        .where('remaining_uses', '>', 0)
-        .firstOrFail()
-    }
-
-    if (
-      (await bouncer.with(TransactionPolicy).denies('buyTicket', session)) &&
-      payload.superTicket === false
-    ) {
-      logger.warn(`${user.name} ${user.forname} doesn't have enough money`)
-      return response.forbidden('Cannot buy a Ticket. Not enough money.')
-    }
-
-    if (payload.superTicket === true) {
-      const transaction = await Transaction.create({
-        type: TransactionType.TICKET,
-        userId: auth.user!.id,
-        amount: 0,
-        balance: user.balance,
-      })
-
-      const superTicket = await Superticket.query()
-        .where('user_id', auth.user!.id)
-        .where('remaining_uses', '>', 0)
-        .firstOrFail()
-
-      superTicket.remainingUses -= 1
-
-      await superTicket.save()
-
-      await user.related('tickets').attach({
-        [session.id]: {
-          transaction_id: transaction.id,
-          superticket_id: superTicket.id,
-        },
-      })
-    } else {
-      const transaction = await Transaction.create({
-        type: TransactionType.TICKET,
-        userId: auth.user!.id,
-        amount: session.price * -1,
-        balance: user.balance - session.price,
-      })
-
-      user.balance -= session.price
-      await user.save()
-
-      await user.related('tickets').attach({
-        [session.id]: {
-          transaction_id: transaction.id,
-          superticket_id: null,
-        },
-      })
-    }
-
-    const ticket = await Session.query()
-      .whereHas('tickets', (query) => {
-        query.where('user_id', auth.user!.id).where('session_id', params.id)
-      })
-      .preload('tickets')
-      .first()
-
-    return response.status(201).json(ticket)
-
   }
-
 }

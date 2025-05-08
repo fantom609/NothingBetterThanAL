@@ -56,14 +56,67 @@ export default class StatisticsController {
         totalPrice: totalPrice,
         totalTickets: tickets.length,
         topSession: {
-          session: topSession.session.id,
+          sessionId: topSession.session.id,
           price: topSession.session.price,
-          movieTitle: topSession.session.movie.name,
+          movie: topSession.session.movie,
         },
         mostWatchedMovie: mostWatchedMovie!.session.movie.name,
       })
     }
 
     return response.status(200).json({})
+  }
+
+  /**
+   * @dailyAttendanceStats
+   * @responseBody 200 - {"dailyTickets": number, "dailyRevenue": number, "attendanceRate": "string"}
+   * @responseBody 500 - {"message": "string"} - Internal server error
+   * @authorization Bearer token required - Access is restricted to authenticated users
+   */
+  async dailyAttendanceStats({ response, logger }: HttpContext) {
+    logger.info('Daily attendance stats requested')
+
+    try {
+      const todayStart = DateTime.now().startOf('day').toUTC().toISO()
+      const todayEnd = DateTime.now().endOf('day').toUTC().toISO()
+
+      const yesterdayStart = DateTime.now().minus({ days: 1 }).startOf('day').toUTC().toISO()
+      const yesterdayEnd = DateTime.now().minus({ days: 1 }).endOf('day').toUTC().toISO()
+
+      const todayTickets = await Ticket.query()
+        .preload('session', (query) => query.preload('movie'))
+        .where('created_at', '>=', todayStart)
+        .andWhere('created_at', '<=', todayEnd)
+        .whereNull('superticket_id')
+
+      const dailyRevenue = todayTickets.reduce((sum, ticket) => sum + ticket.session.price, 0)
+      const todayCount = todayTickets.length
+
+      // Tickets hier
+      const yesterdayCountRaw = await Ticket.query()
+        .where('created_at', '>=', yesterdayStart)
+        .andWhere('created_at', '<=', yesterdayEnd)
+        .whereNull('superticket_id')
+        .count('* as total')
+
+      const yesterdayCount = Number(yesterdayCountRaw[0].$extras.total)
+
+      // Calcul du taux de fréquentation
+      let attendanceRate = 0
+      if (yesterdayCount > 0) {
+        attendanceRate = ((todayCount - yesterdayCount) / yesterdayCount) * 100
+      } else if (todayCount > 0) {
+        attendanceRate = 100
+      }
+
+      return response.status(200).json({
+        dailyTickets: todayCount,
+        dailyRevenue: dailyRevenue,
+        attendanceRate: attendanceRate.toFixed(2) + '%',
+      })
+    } catch (error) {
+      logger.error('Error in dailyAttendanceStats', error)
+      return response.status(500).json({ message: 'Internal server error' })
+    }
   }
 }

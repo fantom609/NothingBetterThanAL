@@ -82,6 +82,12 @@ router
       })
       .prefix('statistics')
       .use(middleware.auth())
+    router
+      .group(() => {
+        router.get('/dailyAttendanceStats', [StatisticsController, 'dailyAttendanceStats'])
+      })
+      .prefix('statistics')
+      .use(middleware.auth())
   })
   .prefix('api')
 

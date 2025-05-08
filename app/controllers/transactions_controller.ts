@@ -96,7 +96,7 @@ export default class TransactionsController {
     if (payload.type === TransactionType.WITHDRAW) {
       if (user.balance - payload.amount < 0) {
         response
-          .status(422)
+          .status(401)
           .send({
             message: 'Insufficient balance. The requested amount exceeds your available balance.',
           })

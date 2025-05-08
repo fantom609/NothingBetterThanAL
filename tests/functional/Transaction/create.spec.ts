@@ -47,11 +47,11 @@ test.group('Transaction create', async (group) => {
     const token = await User.accessTokens.create(user)
 
     const res = await client.post(`/api/users/${user.id}/transactions`).json({
-      type: 'WITHDRAW',
-      amount: 1000,
+        type: 'WITHDRAW',
+        amount: 2000,
     }).bearerToken(token.value!.release())
 
-    res.assertUnprocessableEntity()
+    res.assertUnauthorized()
   })
 
   test('FAIL - 401 - WRONG PAYLOAD', async ({ client }) => {

@@ -1,13 +1,15 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo, beforeCreate } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Session from "#models/session";
 import User from "#models/user";
 import Superticket from "#models/superticket";
 import Transaction from "#models/transaction";
+import { randomUUID } from 'node:crypto'
 
 
 export default class Ticket extends BaseModel {
+
   @column({ isPrimary: true })
   declare userId: string
 
@@ -38,4 +40,5 @@ export default class Ticket extends BaseModel {
 
   @belongsTo(() => Transaction)
   declare transaction: BelongsTo<typeof Transaction>
+
 }

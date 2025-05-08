@@ -5,6 +5,7 @@ import Session from "#models/session";
 import {DateTime} from "luxon";
 import User from "#models/user";
 import Transaction from "#models/transaction";
+import Ticket from '#models/ticket'
 
 export default class extends BaseSeeder {
   async run() {
@@ -131,41 +132,39 @@ export default class extends BaseSeeder {
         balance: users[4].balance - sessions[0].price,
         amount: -sessions[0].price,
       },
-  ])
+    ])
 
-    await users[0].related('tickets').attach({
-      [sessions[0].id]: {
-        transaction_id: transactions[0].id,
-        superticket_id: null,
+    await Ticket.createMany([
+      {
+        userId: users[0].id,
+        sessionId: sessions[0].id,
+        transactionId: transactions[0].id,
+        superticketId: null,
       },
-    })
-
-    await users[1].related('tickets').attach({
-      [sessions[0].id]: {
-        transaction_id: transactions[1].id,
-        superticket_id: null,
+      {
+        userId: users[1].id,
+        sessionId: sessions[0].id,
+        transactionId: transactions[1].id,
+        superticketId: null,
       },
-    })
-
-    await users[2].related('tickets').attach({
-      [sessions[1].id]: {
-        transaction_id: transactions[2].id,
-        superticket_id: null,
+      {
+        userId: users[2].id,
+        sessionId: sessions[1].id,
+        transactionId: transactions[2].id,
+        superticketId: null,
       },
-    })
-
-    await users[3].related('tickets').attach({
-      [sessions[1].id]: {
-        transaction_id: transactions[3].id,
-        superticket_id: null,
+      {
+        userId: users[3].id,
+        sessionId: sessions[1].id,
+        transactionId: transactions[3].id,
+        superticketId: null,
       },
-    })
-
-    await users[4].related('tickets').attach({
-      [sessions[0].id]: {
-        transaction_id: transactions[4].id,
-        superticket_id: null,
-      },
-    })
+      {
+        userId: users[4].id,
+        sessionId: sessions[0].id,
+        transactionId: transactions[4].id,
+        superticketId: null,
+      }
+    ])
   }
 }
