@@ -11,6 +11,7 @@ import router from '@adonisjs/core/services/router'
 import AutoSwagger from 'adonis-autoswagger'
 import swagger from '#config/swagger'
 import {middleware} from "#start/kernel";
+import { register, Counter } from 'prom-client'
 
 const MoviesController = () => import('#controllers/movies_controller')
 const RoomsController = () => import('#controllers/rooms_controller')
@@ -19,6 +20,12 @@ const UsersController = () => import('#controllers/users_controller')
 const AuthController = () => import('#controllers/auth_controller')
 const TransactionController = () => import('#controllers/transactions_controller')
 const StatisticsController = () => import('#controllers/statistics_controller')
+
+
+router.get('/metrics', async ({response}) => {
+  response.header('Content-Type', register.contentType)
+  response.send(await register.metrics())
+})
 
 
 router.get('/swagger', async () => {
@@ -82,13 +89,5 @@ router
       })
       .prefix('statistics')
       .use(middleware.auth())
-    router
-      .group(() => {
-        router.get('/dailyAttendanceStats', [StatisticsController, 'dailyAttendanceStats'])
-      })
-      .prefix('statistics')
-      .use(middleware.auth())
   })
   .prefix('api')
-
-
